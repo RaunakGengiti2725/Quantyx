@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: quantumproject
+Version: 0.1.0
+Summary: Quantum Geometry Project - Mapping entanglement entropy to discrete bulk geometry
+Requires-Python: >=3.8
+Requires-Dist: numpy
+Requires-Dist: torch
+Requires-Dist: networkx
+Requires-Dist: matplotlib
+Requires-Dist: pennylane
+Requires-Dist: scipy
+Requires-Dist: dgl
+Requires-Dist: tensorboard
+Requires-Dist: scikit-learn

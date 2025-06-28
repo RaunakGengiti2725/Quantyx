@@ -1,0 +1,9 @@
+numpy
+torch
+networkx
+matplotlib
+pennylane
+scipy
+dgl
+tensorboard
+scikit-learn
