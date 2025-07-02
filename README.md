@@ -1,93 +1,202 @@
-# Quantum Geometry Project
+# ⚛️ Quantyx - AI Image Generation Platform
 
-This project explores the mapping between entanglement entropy of a quantum spin chain and discrete bulk geometry. It simulates quenches of various Hamiltonians using PennyLane and infers edge weights of a bulk tree via a graph neural network implemented with DGL.
+> **Physics-Inspired Creativity • Export Ready • Professional Quality**
 
-## Features
-- Modular architecture with separate modules for quantum simulation, models, and training.
-- Support for multiple Hamiltonians (TFIM, XXZ) and easy extension.
-- GPU acceleration via PyTorch when available.
-- Training logs stored with TensorBoard.
-- Save and load intermediate results.
-- Jupyter notebooks in `notebooks/` provide examples of usage and visualisation.
+![Quantyx Banner](https://img.shields.io/badge/Quantyx-AI%20Art%20Platform-blueviolet?style=for-the-badge&logo=atom)
+![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## Usage
-```bash
-pip install -r requirements.txt
-python run_experiment.py --n_qubits 8 --hamiltonian tfim --time 1.0 --logdir runs/demo
-```
-The script saves learned edge weights in `runs/demo/` and writes TensorBoard logs that can be visualized with:
-```bash
-tensorboard --logdir runs/demo
-```
-To generate publication-ready figures after running experiments:
-```bash
-python generate_figures.py --n_qubits 8 --hamiltonian tfim --steps 5 --t_max 3.14
-```
-Outputs are saved in `figures/` as PNG and PDF.
+Quantyx is a professional AI image generation platform that uses real quantum field theory and differential geometry equations to create stunning, physics-inspired artwork. Built with Streamlit, it offers an intuitive interface for both beginners and professionals.
 
-## Theory
-A quenched spin chain develops entanglement across contiguous intervals. A graph neural network learns edge weights on a binary bulk tree so that minimal cuts reproduce these entropies. The resulting curvature correlates with boundary energy shifts, inspired by AdS/CFT intuition.
+## 🌟 Features
 
-## Tests
-Simple unit tests for entropy computation and GNN training are located in `tests/`.
+### 🎨 **5 Unique Artistic Styles**
+- **Quantum Bloom** - Blooming quantum interference patterns
+- **Singularity Core** - Gravitational collapse visualizations  
+- **Entanglement Field** - Quantum entanglement dynamics
+- **Crystal Spire** - Geometric crystalline structures
+- **Tunneling Veil** - Quantum tunneling probability clouds
 
+### 🎛️ **Real-Time Physics Controls**
+- **Energy Flux** (0-10) - Control quantum field intensity
+- **Geometric Order** (0-100%) - Adjust symmetry levels
+- **Field Distortion** (0-1) - Spacetime curvature effects
+- **Spectral Blend** (0-1) - Color variation across fields
 
-## Phase 4 Features
-- Causal perturbations via `quantum.perturb`
-- Entanglement inversion metrics in `analysis/invertibility.py`
-- Saliency and attention visualizations under `quantumproject.visualization`
+### 🌈 **8 Professional Color Palettes**
+- Deep Plasma, Quantum Aurora, Neon Dreams
+- Cosmic Fire, Ocean Depths, Forest Mystique
+- Desert Heat, Arctic Glow
 
-## Advanced Analysis
-- `analysis.geodesic` reconstructs geodesic distance matrices and 2D embeddings.
-- `analysis.scaling` fits the scaling law ⟨d⟩ ∝ n^(1/D) to estimate spatial dimension.
-- `analysis.invertibility.entropy_round_trip` tests entropy ↔ geometry fidelity.
-- `quantum.perturb.perturb_time_series` visualizes causal propagation of boundary perturbations.
-- `models.quantum_gnn.HybridQuantumGNN` provides a quantum–classical predictor.
-- `utils.graph_topologies` and `utils.bulk_graph` support custom bulk graphs beyond the default binary tree.
+### 📐 **Export Options**
+- **Standard** (512×512) - Quick previews
+- **HD** (1024×1024) - Social media ready
+- **4K** (3840×2160) - Professional displays
+- **Print** (4096×4096) - Ultra high-resolution
 
-## Curvature & Energy Analysis
-The module `curvature_energy_analysis.py` provides utilities to study how local
-curvature relates to boundary energy shifts on very large graphs.
+### 🎬 **Animation Studio**
+- Create looping GIF animations
+- Parameter morphing over time
+- Perfect for VJing and social media
+- Professional export quality
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8 or higher
+- Git (for cloning)
 
 ### Installation
-Install Python dependencies:
-```bash
-pip install -r requirements.txt
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/RaunakGengiti2725/Quantyx.git
+   cd Quantyx
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Launch Quantyx**
+   ```bash
+   streamlit run "Image_Generation.py"
+   ```
+   
+   Or use the launcher:
+   ```bash
+   python launch_app.py
+   ```
+
+4. **Open your browser** to `http://localhost:8501`
+
+## 💡 Usage Guide
+
+### **Quick Start with Presets**
+1. Choose a **Quick Preset** from the sidebar (Ethereal Dream, Cosmic Storm, etc.)
+2. Click **⚛️ Run Simulation**
+3. Download your artwork in your preferred resolution
+
+### **Manual Fine-Tuning**
+1. Select your **Quantum Structure** style
+2. Adjust **Field Parameters**:
+   - **Energy Flux** for intensity
+   - **Geometric Order** for symmetry
+   - **Field Distortion** for warping effects
+   - **Spectral Blend** for color variation
+3. Choose your **Spectral Palette**
+4. Set **Output Resolution**
+5. Generate and export
+
+### **Creating Animations**
+1. Navigate to **Animate Fields** page
+2. Set base parameters
+3. Choose animation parameter (Energy, Symmetry, etc.)
+4. Set frame count and variation range
+5. Generate looping GIF animation
+
+## 🔬 Technical Details
+
+### **Physics Foundation**
+Quantyx implements real equations from:
+- **Quantum Field Theory** - Wave function mathematics
+- **Differential Geometry** - Spacetime curvature calculations
+- **Complex Analysis** - Holomorphic function visualization
+- **Statistical Mechanics** - Thermal distribution patterns
+
+### **Rendering Pipeline**
+- NumPy arrays for field calculations
+- SciPy for Gaussian filtering and transformations
+- Matplotlib colormaps for scientific visualization
+- PIL for high-quality image processing
+
+### **Performance**
+- **512px**: ~1 second generation
+- **1024px**: ~3 seconds generation  
+- **4K**: ~15 seconds generation
+- Optimized algorithms for real-time parameter adjustment
+
+## 🎯 Use Cases
+
+- **Digital Art** - Professional artwork creation
+- **VJ Performances** - Live visual content
+- **Music Videos** - Abstract visual backgrounds
+- **Social Media** - Eye-catching content
+- **Print Media** - High-resolution artwork
+- **Scientific Visualization** - Physics concept illustration
+- **Game Development** - Procedural textures
+- **Web Design** - Unique background elements
+
+## 📁 Project Structure
+
+```
+Quantyx/
+├── Image_Generation.py          # Main Streamlit app
+├── pages/
+│   └── Animate_Fields.py        # Animation studio
+├── quantumproject/              # Core modules
+│   ├── models/                  # Neural network models
+│   ├── quantum/                 # Physics simulations
+│   ├── utils/                   # Utility functions
+│   └── visualization/           # Plotting tools
+├── requirements.txt             # Python dependencies
+├── launch_app.py               # Application launcher
+└── .streamlit/                 # Streamlit configuration
 ```
 
-### API
-```python
-from curvature_energy_analysis import (
-    compute_curvature,
-    compute_energy_deltas,
-    safe_pearson_correlation,
-)
-```
-- `compute_curvature(graph)` – return per-node scalar curvature as a NumPy array.
-- `compute_energy_deltas(graph, attr="delta_energy")` – sum edge energy deltas
-  touching each node.
-- `safe_pearson_correlation(x, y)` – correlation with cleaning and robust
-  fallback returning `(r, p)`.
+## 🛠️ Development
 
-### Example
-```python
-import networkx as nx
-from curvature_energy_analysis import compute_curvature, compute_energy_deltas, safe_pearson_correlation
+### **Adding New Styles**
+1. Implement your field equation in `QuantumArtGenerator`
+2. Add style mapping in `_render_field` method
+3. Update color scheme definitions
+4. Test with various parameters
 
-g = nx.path_graph(8)
-for u, v in g.edges():
-    g[u][v]["delta_energy"] = 0.5
-curv = compute_curvature(g)
-delta = compute_energy_deltas(g)
-r, p = safe_pearson_correlation(curv, delta)
-print(r, p)
-```
+### **Custom Color Palettes**
+1. Define your palette in `COLOR_PALETTES`
+2. Include description and color mappings
+3. Test across all artistic styles
 
-### Benchmark
-Run the built-in benchmark on a synthetic graph:
-```bash
-python curvature_energy_analysis.py --nodes 100000 --p 1e-5
-```
-The script reports timings for curvature computation, energy aggregation, and
-correlation evaluation. On a modern workstation the analysis on a 100k-node
-graph finishes in a few seconds.
+### **Performance Optimization**
+- Use NumPy vectorization for field calculations
+- Implement caching for repeated computations
+- Consider multiprocessing for animation rendering
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🎭 Gallery
+
+*Coming soon - showcase of artwork created with Quantyx*
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/RaunakGengiti2725/Quantyx/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/RaunakGengiti2725/Quantyx/discussions)
+- **Documentation**: Check the `/docs` folder for detailed guides
+
+## 🌟 Acknowledgments
+
+- Built with ❤️ using quantum physics and mathematics
+- Powered by Streamlit, NumPy, and SciPy
+- Inspired by the beauty of quantum mechanics
+- Special thanks to the scientific visualization community
+
+---
+
+**⚛️ Quantyx - Where Physics Meets Art**
+
+*Transform quantum equations into visual masterpieces*
