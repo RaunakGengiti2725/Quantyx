@@ -1,226 +1,188 @@
-# ⚛️ Quantyx - AI Image Generation Platform
+# Quantyx - Quantum Geometry Art Generator
 
-> **Physics-Inspired Creativity • Export Ready • Professional Quality**
+🌌 **Transform Real Quantum Physics into Stunning Visual Art** ⚛️
 
-![Quantyx Banner](https://img.shields.io/badge/Quantyx-AI%20Art%20Platform-blueviolet?style=for-the-badge&logo=atom)
-![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+Quantyx is the world's first **physics-accurate** quantum art generation platform that transforms genuine quantum entanglement data, bulk geometry, and curvature correlations into breathtaking visualizations.
 
-Quantyx is a revolutionary **Research-to-Art Platform** that transforms real quantum many-body simulations into stunning visualizations. Unlike other generators that use "physics-inspired" algorithms, Quantyx renders **actual quantum entanglement data** from your research, creating artwork that represents genuine scientific discoveries.
+## ✨ Features
 
-## 🌟 Features
+### 🔬 **Real Quantum Physics Integration**
+- **PennyLane Quantum Simulations**: Genuine TFIM, XXZ, and Heisenberg Hamiltonians
+- **Entanglement Analysis**: Von Neumann entropy across contiguous intervals  
+- **Bulk Geometry Reconstruction**: GNN-based AdS/CFT-inspired mapping
+- **Holographic Correspondence**: Real bulk-boundary correlations
 
-### 🔬 **Real Quantum Research Integration** ⭐ **NEW!**
-- **Live Quantum Simulations** - PennyLane-powered TFIM, XXZ, Heisenberg Hamiltonians
-- **Entanglement Analysis** - Von Neumann entropy across all contiguous intervals
-- **Holographic Correspondence** - AdS/CFT-inspired bulk-boundary mapping
-- **Graph Neural Networks** - Learn bulk geometry from boundary entanglement
-- **Curvature-Energy Correlations** - Real physics results in every visualization
-- **Research Data Export** - Download complete quantum simulation data
+### 🎨 **Professional Art Generation**
+- **5 Quantum Art Styles**: Quantum Bloom, Singularity Core, Entanglement Field, Crystal Spire, Tunneling Veil
+- **11 Research Presets**: Real physics configurations for authentic quantum art
+- **3 Color Palettes**: Deep Plasma, Ice Flux, Solar Burst with style-specific variations
+- **4K Resolution Support**: From 512×512 to 4K (3840×2160) outputs
 
-### 🎨 **5 Unique Artistic Styles**
-- **Quantum Bloom** - Blooming quantum interference patterns
-- **Singularity Core** - Gravitational collapse visualizations  
-- **Entanglement Field** - Quantum entanglement dynamics
-- **Crystal Spire** - Geometric crystalline structures
-- **Tunneling Veil** - Quantum tunneling probability clouds
+### 🎬 **Animation Studio**  
+- **Quantum Phase Evolution**: Watch quantum phases evolve through real-time dynamics
+- **Entanglement Growth**: Visualize quantum entanglement spreading across systems
+- **Holographic Flow**: AdS/CFT-inspired bulk-boundary animations
+- **Research Data Export**: Frame-by-frame quantum analysis with correlation coefficients
 
-### 🎛️ **Real-Time Physics Controls**
-- **Energy Flux** (0-10) - Control quantum field intensity
-- **Geometric Order** (0-100%) - Adjust symmetry levels
-- **Field Distortion** (0-1) - Spacetime curvature effects
-- **Spectral Blend** (0-1) - Color variation across fields
-
-### 🌈 **8 Professional Color Palettes**
-- Deep Plasma, Quantum Aurora, Neon Dreams
-- Cosmic Fire, Ocean Depths, Forest Mystique
-- Desert Heat, Arctic Glow
-
-### 📐 **Export Options**
-- **Standard** (512×512) - Quick previews
-- **HD** (1024×1024) - Social media ready
-- **4K** (3840×2160) - Professional displays
-- **Print** (4096×4096) - Ultra high-resolution
-
-### 🎬 **Animation Studio**
-- Create looping GIF animations
-- Parameter morphing over time
-- Perfect for VJing and social media
-- Professional export quality
-
-### 🧬 **Quantum Research Presets**
-- **🔬 Quantum Criticality** - Critical point phase transitions (TFIM)
-- **🌌 Deep Entanglement** - Maximum entropy regimes (Heisenberg)
-- **🕳️ Holographic Duality** - Strong bulk-boundary correspondence (XXZ)
-- **⚡ Quantum Quench** - Sudden parameter change dynamics
-- **📐 Geometric Phase** - Adiabatic evolution with Berry phases
+### 🧙‍♂️ **Step-by-Step Wizard Interface**
+- **4-Step Creation Flow**: Choose research/artistic → Select colors → Adjust parameters → Generate
+- **Professional UX**: Gradient cards, progress indicators, instant generation
+- **Butterfly Symmetry Layout**: Perfect vertical parameter layout with horizontal navigation
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8 or higher
-- Git (for cloning)
-
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/RaunakGengiti2725/Quantyx.git
-   cd Quantyx
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/RaunakGengiti2725/Quantyx.git
+cd Quantyx
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-3. **Launch Quantyx**
-   ```bash
-   streamlit run "Image_Generation.py"
-   ```
-   
-   Or use the launcher:
-   ```bash
-   python launch_app.py
-   ```
+# Launch the application
+streamlit run Image_Generation.py
+```
 
-4. **Open your browser** to `http://localhost:8501`
+### Dependencies
+- **Core**: `streamlit`, `numpy`, `matplotlib`, `scipy`, `pillow`
+- **Quantum**: `pennylane`, `torch` 
+- **Visualization**: `plotly`, `networkx`
 
-## 💡 Usage Guide
+## 🖼️ Usage
 
-### **Quick Start with Presets**
-1. Choose a **Quick Preset** from the sidebar (Ethereal Dream, Cosmic Storm, etc.)
-2. Click **⚛️ Run Simulation**
-3. Download your artwork in your preferred resolution
+### **Image Generation**
+1. **Open** `http://localhost:8501` in your browser
+2. **Choose Path**: Quantum Research or Artistic Preset
+3. **Select Preset**: Choose from 11 scientifically-tuned configurations
+4. **Pick Colors**: Deep Plasma, Ice Flux, or Solar Burst palettes
+5. **Generate**: Create your quantum masterpiece instantly
 
-### **Manual Fine-Tuning**
-1. Select your **Quantum Structure** style
-2. Adjust **Field Parameters**:
-   - **Energy Flux** for intensity
-   - **Geometric Order** for symmetry
-   - **Field Distortion** for warping effects
-   - **Spectral Blend** for color variation
-3. Choose your **Spectral Palette**
-4. Set **Output Resolution**
-5. Generate and export
+### **Animation Studio** 
+1. **Navigate** to "Animate Fields" page
+2. **Select Animation**: Quantum Phase Evolution, Entanglement Dynamics, etc.
+3. **Configure**: Set frames, duration, and resolution
+4. **Export**: Download as high-quality GIF with research data
 
-### **Creating Animations**
-1. Navigate to **Animate Fields** page
-2. Set base parameters
-3. Choose animation parameter (Energy, Symmetry, etc.)
-4. Set frame count and variation range
-5. Generate looping GIF animation
+### **Quantum Research Mode**
+When enabled, generates art from:
+- Real quantum circuit simulations (8-qubit systems)
+- Actual entanglement entropy calculations  
+- GNN-learned bulk geometry weights
+- Physics-accurate curvature-energy correlations
 
-## 🔬 Technical Details
+## 🧬 Technical Architecture
 
-### **Quantum Research Foundation**
-Quantyx uses your actual research modules:
-- **PennyLane Simulations** - Real quantum circuits and Hamiltonians  
-- **Graph Neural Networks** - Bulk geometry reconstruction from entanglement
-- **Holographic Duality** - AdS/CFT correspondence principles
-- **Many-Body Physics** - TFIM, XXZ, Heisenberg model simulations
-- **Entanglement Analysis** - Von Neumann entropy distributions
-- **Curvature-Energy Mapping** - Boundary-bulk holographic correspondence
+```
+Real Quantum Physics → GNN Training → Mathematical Art Functions → Beautiful Images
+     ↑                    ↑                      ↑
+  PennyLane           PyTorch              NumPy/Matplotlib
+  Simulations        (64-node nets)       Pure Mathematics
+```
 
-### **Rendering Pipeline**
-- NumPy arrays for field calculations
-- SciPy for Gaussian filtering and transformations
-- Matplotlib colormaps for scientific visualization
-- PIL for high-quality image processing
+### **Core Components:**
+- **`quantum_art_bridge.py`**: Connects quantum research to art generation
+- **`Image_Generation.py`**: Main Streamlit interface with wizard flow
+- **`pages/Animate_Fields.py`**: Animation studio with quantum presets
+- **`quantumproject/`**: Quantum simulation and GNN model modules
+- **`curvature_energy_analysis.py`**: Physics correlation analysis
 
-### **Performance**
-- **512px**: ~1 second generation
-- **1024px**: ~3 seconds generation  
-- **4K**: ~15 seconds generation
-- Optimized algorithms for real-time parameter adjustment
+## 🔬 Scientific Accuracy
 
-## 🎯 Use Cases
+Unlike AI-generated "quantum-inspired" art, Quantyx uses:
 
-### **Research & Science**
-- **Physics Research** - Visualize your quantum simulation results
-- **Scientific Papers** - Publication-ready quantum art figures  
-- **Conference Presentations** - Stunning physics visualization
-- **Grant Proposals** - Visual representation of quantum concepts
-- **Educational Content** - Teaching quantum mechanics through art
+- ✅ **Real quantum circuits** with genuine Hamiltonians
+- ✅ **Actual entanglement entropy** calculations  
+- ✅ **Physics-accurate** bulk geometry reconstruction
+- ✅ **Mathematical field equations** (no AI black boxes)
+- ✅ **Reproducible results** (same parameters = same output)
 
-### **Creative & Commercial**
-- **Digital Art** - Physics-accurate generative art
-- **VJ Performances** - Live quantum-driven visuals
-- **Music Videos** - Science-inspired backgrounds
-- **Social Media** - Unique quantum content
-- **Print Media** - High-resolution scientific art
-- **Game Development** - Quantum-themed procedural textures
-- **Web Design** - Physics-based design elements
+## 📊 Research Data Export
+
+Every quantum-generated artwork includes:
+- **Correlation coefficients** between curvature and energy
+- **Entanglement entropy** across all boundary intervals
+- **Bulk geometry weights** from GNN training
+- **Hamiltonian parameters** and evolution times
+- **Complete metadata** for scientific reproducibility
+
+## 🎯 Example Presets
+
+### **Quantum Research**
+- **🔬 Quantum Criticality**: Critical point of TFIM phase transition
+- **🌌 Deep Entanglement**: Maximum entropy regime with Heisenberg dynamics  
+- **🕳️ Holographic Duality**: Strong bulk-boundary correspondence
+- **⚡ Quantum Quench**: Sudden parameter change dynamics
+- **📐 Geometric Phase**: Adiabatic evolution with Berry phases
+
+### **Artistic**  
+- **Fractal Bloom**: Organic patterns with vibrant energy blooms
+- **Energetic Grid**: High-energy crystalline lattice structures
+- **Liquid Collapse**: Fluid dynamics meeting gravitational collapse
+- **Frozen Singularity**: Crystallized black hole geometry
+- **Ethereal Entanglement**: Flowing quantum correlations
+
+## 🌈 Color Science
+
+Each palette maps quantum field values to scientifically-motivated colors:
+
+- **Deep Plasma**: High-energy quantum fields (purple/neon spectra)
+- **Ice Flux**: Cold, symmetric quantum structures (blue/white gradients)  
+- **Solar Burst**: Warm, chaotic deformation fields (orange/red dynamics)
 
 ## 📁 Project Structure
 
 ```
 Quantyx/
 ├── Image_Generation.py          # Main Streamlit app
-├── pages/
-│   └── Animate_Fields.py        # Animation studio
-├── quantumproject/              # Core modules
-│   ├── models/                  # Neural network models
-│   ├── quantum/                 # Physics simulations
-│   ├── utils/                   # Utility functions
-│   └── visualization/           # Plotting tools
+├── pages/Animate_Fields.py      # Animation studio  
+├── quantum_art_bridge.py        # Physics-to-art pipeline
+├── quantumproject/              # Quantum simulation modules
+│   ├── quantum/                 # Hamiltonian simulations
+│   ├── models/                  # GNN architectures
+│   ├── training/                # Model training pipelines
+│   └── utils/                   # Graph utilities & bulk trees
+├── analysis/                    # Physics analysis tools
 ├── requirements.txt             # Python dependencies
-├── launch_app.py               # Application launcher
-└── .streamlit/                 # Streamlit configuration
+└── README.md                   # This file
 ```
-
-## 🛠️ Development
-
-### **Adding New Styles**
-1. Implement your field equation in `QuantumArtGenerator`
-2. Add style mapping in `_render_field` method
-3. Update color scheme definitions
-4. Test with various parameters
-
-### **Custom Color Palettes**
-1. Define your palette in `COLOR_PALETTES`
-2. Include description and color mappings
-3. Test across all artistic styles
-
-### **Performance Optimization**
-- Use NumPy vectorization for field calculations
-- Implement caching for repeated computations
-- Consider multiprocessing for animation rendering
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our contributing guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🎭 Gallery
+## 🙏 Acknowledgments
 
-*Coming soon - showcase of artwork created with Quantyx*
+- **PennyLane Team** for quantum computing framework
+- **Quantum Geometry Research Community** for AdS/CFT insights  
+- **Open Source Contributors** for foundational libraries
 
-## 📞 Support
+## 🚀 Future Development
 
-- **Issues**: [GitHub Issues](https://github.com/RaunakGengiti2725/Quantyx/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/RaunakGengiti2725/Quantyx/discussions)
-- **Documentation**: Check the `/docs` folder for detailed guides
-
-## 🌟 Acknowledgments
-
-- Built with ❤️ using quantum physics and mathematics
-- Powered by Streamlit, NumPy, and SciPy
-- Inspired by the beauty of quantum mechanics
-- Special thanks to the scientific visualization community
+- [ ] **16+ qubit systems** for deeper quantum complexity
+- [ ] **Custom Hamiltonian** designer interface
+- [ ] **3D holographic** visualizations  
+- [ ] **VR quantum art** gallery
+- [ ] **Scientific paper** export functionality
 
 ---
 
-**⚛️ Quantyx - Where Physics Meets Art**
+<div align="center">
 
-*Transform quantum equations into visual masterpieces*
+**🌌 Transform the Universe's Deepest Physics into Art 🎨**
+
+*Built with genuine quantum physics • No AI black boxes • 100% reproducible science*
+
+[![GitHub stars](https://img.shields.io/github/stars/RaunakGengiti2725/Quantyx?style=social)](https://github.com/RaunakGengiti2725/Quantyx/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>

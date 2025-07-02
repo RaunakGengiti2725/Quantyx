@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """
-Quantum Geometry Art Generator - Animation Mode
+Quantyx Animation Studio - Physics-Accurate Quantum Animation
 Multi-Frame Animation Mode for creating looping quantum field visualizations.
-Perfect for VJing, music videos, and social sharing.
+Now with REAL quantum physics simulations for scientific accuracy!
 """
 
 import streamlit as st
+
+# Configure page for animation studio
+st.set_page_config(
+    page_title="Quantyx - Animation Studio",
+    page_icon="🎬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -31,14 +39,72 @@ try:
         COLOR_PALETTES, QuantumArtGenerator, load_css,
         create_gif_from_frames, create_download_link_gif
     )
+    from Image_Generation import VISUAL_PRESETS
+    
+    # Import quantum research capabilities
+    try:
+        from quantum_art_bridge import QuantumArtBridge, quick_quantum_art, generate_quantum_report
+        QUANTUM_RESEARCH_AVAILABLE = True
+    except ImportError:
+        QUANTUM_RESEARCH_AVAILABLE = False
+        
 except ImportError:
     st.error("Error importing required modules. Please ensure the main app file is available.")
     st.stop()
 
 # Note: st.set_page_config() is handled by the main app, not individual pages
 
+def reset_animation_wizard():
+    """Reset the animation wizard to step 1 and clear all selections."""
+    st.session_state.animation_wizard_step = 1
+    st.session_state.selected_animation_preset = None
+    st.session_state.animation_color_palette = "Deep Plasma"
+    st.session_state.animation_frames = 20
+    st.session_state.animation_duration = 2.0
+    
+    # Clear any quantum animation state
+    st.session_state.quantum_animation_mode = False
+    if hasattr(st.session_state, 'current_quantum_anim_preset'):
+        del st.session_state.current_quantum_anim_preset
+
+def generate_quantum_animation_from_wizard():
+    """Generate quantum animation using the wizard selections."""
+    # Get settings from wizard
+    color_palette = st.session_state.animation_color_palette
+    resolution = st.session_state.animation_resolution
+    frames = st.session_state.animation_frames
+    duration = st.session_state.animation_duration
+    frame_duration = duration / frames
+    
+    # Calculate individual frame duration
+    frame_duration = duration / frames
+    
+    quantum_mode = getattr(st.session_state, 'animation_quantum_mode', False)
+    
+    with st.spinner("🎬 Creating your quantum animation masterpiece..."):
+        if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
+            # Get time range from preset or default
+            preset_data = st.session_state.animation_preset_data
+            time_range = preset_data.get("evolution_time", 2.0)
+            
+            generate_quantum_animation(
+                st.session_state.generator, color_palette, frames, 
+                frame_duration, resolution, preset_data, time_range
+            )
+        else:
+            # For artistic mode, use defaults
+            generate_animation(
+                st.session_state.generator, "Quantum Bloom", color_palette,
+                5.0, 50, 0.3, 0.5, "Energy Flux", 0.8, frames, frame_duration, resolution
+            )
+        
+        # Reset wizard after successful generation
+        st.session_state.animation_wizard_step = 1
+        
+        st.success("🎉 **Quantum Animation Generated!** Your masterpiece is ready below!")
+
 def main():
-    """Animation Studio main interface."""
+    """Animation Studio main interface with quantum research integration."""
     
     # Load custom CSS
     load_css()
@@ -54,104 +120,252 @@ def main():
     if 'animation_gif' not in st.session_state:
         st.session_state.animation_gif = None
     
+    if 'animation_quantum_data' not in st.session_state:
+        st.session_state.animation_quantum_data = None
 
-    
-    # Animation controls in sidebar
+    # Initialize animation wizard state
+    if 'animation_wizard_step' not in st.session_state:
+        st.session_state.animation_wizard_step = 1
+    if 'selected_animation_preset' not in st.session_state:
+        st.session_state.selected_animation_preset = None
+    if 'animation_color_palette' not in st.session_state:
+        st.session_state.animation_color_palette = "Deep Plasma"
+    if 'animation_frames' not in st.session_state:
+        st.session_state.animation_frames = 20
+    if 'animation_duration' not in st.session_state:
+        st.session_state.animation_duration = 2.0
+
+    # Perfect Animation Wizard (4-Step Flow)
     with st.sidebar:
-        st.markdown("## 🎬 Animation Settings")
+        st.markdown("## 🎬 Animation Wizard")
         
-        # Base parameters for animation
-        st.markdown("### 🎯 Base Structure")
-        anim_style = st.selectbox(
-            "Quantum Structure:",
-            ["Quantum Bloom", "Singularity Core", "Entanglement Field", "Crystal Spire", "Tunneling Veil"],
-            help="Base quantum field geometry for animation"
-        )
+        # Progress indicator (Perfect 4-step flow)
+        animation_steps = ["🎯 Animation Type", "🌈 Color Palette", "⚙️ Settings", "🎬 Generate"]
+        current_step = st.session_state.animation_wizard_step
         
-        anim_palette = st.selectbox(
-            "Color Palette:",
-            list(COLOR_PALETTES.keys()),
-            help="Color scheme for the animation"
-        )
+        st.markdown("### 📋 Progress")
+        for i, step in enumerate(animation_steps, 1):
+            if i < current_step:
+                st.markdown(f"✅ **Step {i}**: {step}")
+            elif i == current_step:
+                st.markdown(f"🔄 **Step {i}**: {step}")
+            else:
+                st.markdown(f"⏸️ **Step {i}**: {step}")
         
-        # Show palette description
-        st.info(f"💡 {COLOR_PALETTES[anim_palette]['description']}")
-        
-        st.markdown("### ⚛️ Base Parameters")
-        
-        base_energy = st.slider("Base Energy Flux", 0.0, 10.0, 5.0, 0.1, help="Starting energy level")
-        base_symmetry = st.slider("Base Geometric Order", 0, 100, 50, help="Starting symmetry level")
-        base_deformation = st.slider("Base Field Distortion", 0.0, 1.0, 0.3, 0.01, help="Starting deformation amount")
-        base_color_variation = st.slider("Base Spectral Blend", 0.0, 1.0, 0.5, 0.01, help="Starting color variation")
-        
-        st.markdown("### 🎭 Animation Control")
-        
-        animate_param = st.selectbox(
-            "Animate Parameter:",
-            ["Energy Flux", "Geometric Order", "Field Distortion", "Spectral Blend"],
-            help="Which parameter to animate over time"
-        )
-        
-        variation_range = st.slider(
-            "Animation Intensity", 
-            0.1, 2.0, 0.8, 0.1,
-            help="How dramatically the parameter changes"
-        )
-        
-        st.markdown("### ⏱️ Timing Control")
-        
-        frame_count = st.slider(
-            "Frame Count", 
-            8, 30, 16,
-            help="More frames = smoother animation but larger file"
-        )
-        
-        frame_duration = st.slider(
-            "Frame Duration (seconds)", 
-            0.05, 0.5, 0.1, 0.01,
-            help="How long each frame displays"
-        )
-        
-        total_duration = frame_count * frame_duration
-        st.info(f"🕐 Total loop: {total_duration:.1f} seconds")
-        
-        st.markdown("### 📐 Export Settings")
-        
-        anim_resolution = st.selectbox(
-            "Resolution:",
-            ["Standard (512×512)", "HD (1024×1024)"],
-            help="Higher resolution = larger file size"
-        )
-        
-        anim_resolution_map = {
-            "Standard (512×512)": 512,
-            "HD (1024×1024)": 1024
-        }
-        anim_res = anim_resolution_map[anim_resolution]
-        
-        # Estimate file size and generation time
-        estimated_time = frame_count * (2 if anim_res == 1024 else 1)
-        estimated_size = frame_count * (0.5 if anim_res == 1024 else 0.2)
-        
-        st.markdown(f"""
-        **📊 Estimates:**
-        - ⏱️ Generation: ~{estimated_time}s
-        - 📁 File size: ~{estimated_size:.1f}MB
-        - 🔄 Loop duration: {total_duration:.1f}s
-        """)
-        
-        # Generate animation button
         st.markdown("---")
-        if st.button("🎬 Generate Animation", type="primary", use_container_width=True, key="generate_anim"):
-            generate_animation(
-                st.session_state.generator, anim_style, anim_palette,
-                base_energy, base_symmetry, base_deformation, base_color_variation,
-                animate_param, variation_range, frame_count, frame_duration, anim_res
+        
+        # Step 1: Choose Animation Type
+        if st.session_state.animation_wizard_step == 1:
+            st.markdown("### 🎯 Step 1: Choose Animation")
+            st.markdown("*Select your quantum animation type*")
+            
+            # Animation preset dropdown
+            animation_presets = {
+                "🌊 Quantum Phase Evolution": {
+                    "description": "Watch quantum phases evolve through time with real TFIM Hamiltonian dynamics",
+                    "hamiltonian_type": "tfim",
+                    "evolution_time": 3.14,
+                    "hamiltonian_params": {"h": 0.5, "J": 1.0},
+                    "style": "Quantum Bloom",
+                    "animation_type": "phase_evolution",
+                    "frames": 20,
+                    "speed": "medium"
+                },
+                "🔗 Entanglement Dynamics": {
+                    "description": "Visualize quantum entanglement growing and spreading across the system",
+                    "hamiltonian_type": "xxz",
+                    "evolution_time": 2.5,
+                    "hamiltonian_params": {"Jz": 1.0, "Jxy": 0.5},
+                    "style": "Entanglement Field", 
+                    "animation_type": "entanglement_growth",
+                    "frames": 16,
+                    "speed": "slow"
+                },
+                "⚡ Quantum Quench Animation": {
+                    "description": "Dramatic quantum state transitions with sudden parameter changes",
+                    "hamiltonian_type": "heisenberg",
+                    "evolution_time": 4.0,
+                    "hamiltonian_params": {"J": 1.2},
+                    "style": "Crystal Spire",
+                    "animation_type": "quench_dynamics",
+                    "frames": 24,
+                    "speed": "fast"
+                },
+                "🌌 Holographic Flow": {
+                    "description": "AdS/CFT inspired bulk-boundary correspondence flowing through time",
+                    "hamiltonian_type": "tfim",
+                    "evolution_time": 6.28,
+                    "hamiltonian_params": {"h": 1.0, "J": 0.8},
+                    "style": "Singularity Core",
+                    "animation_type": "holographic_flow",
+                    "frames": 32,
+                    "speed": "medium"
+                }
+            }
+            
+            selected_animation_preset = st.selectbox(
+                "Choose animation preset:",
+                list(animation_presets.keys()),
+                help="Select a quantum animation with real physics evolution"
             )
+            
+            if selected_animation_preset:
+                preset_data = animation_presets[selected_animation_preset]
+                st.info(f"🎬 **{selected_animation_preset}**\n\n{preset_data['description']}")
+                st.session_state.selected_animation_preset = selected_animation_preset
+                st.session_state.animation_preset_data = preset_data
+                st.session_state.animation_quantum_mode = True
+                
+                # Set default frames and duration from preset
+                st.session_state.animation_frames = preset_data["frames"]
+                if preset_data["speed"] == "slow":
+                    st.session_state.animation_duration = 3.0
+                elif preset_data["speed"] == "fast":
+                    st.session_state.animation_duration = 1.5
+                else:  # medium
+                    st.session_state.animation_duration = 2.0
+            
+            if st.button("Continue to Colors ➡️", type="primary", use_container_width=True):
+                if st.session_state.selected_animation_preset:
+                    st.session_state.animation_wizard_step = 2
+                    st.rerun()
+        
+        # Step 2: Choose Color Palette
+        elif st.session_state.animation_wizard_step == 2:
+            st.markdown("### 🌈 Step 2: Animation Colors")
+            st.markdown("*Choose the color palette for your animation*")
+            
+            color_palette = st.selectbox(
+                "Animation Palette:",
+                list(COLOR_PALETTES.keys()),
+                index=list(COLOR_PALETTES.keys()).index(st.session_state.animation_color_palette),
+                help="Color mapping for the animation"
+            )
+            
+            st.info(f"💡 {COLOR_PALETTES[color_palette]['description']}")
+            st.session_state.animation_color_palette = color_palette
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.animation_wizard_step = 1
+                    st.rerun()
+            with col2:
+                if st.button("Continue to Settings ➡️", type="primary", use_container_width=True):
+                    st.session_state.animation_wizard_step = 3
+                    st.rerun()
+        
+        # Step 3: Animation Settings
+        elif st.session_state.animation_wizard_step == 3:
+            st.markdown("### ⚙️ Step 3: Animation Settings")
+            st.markdown("*Fine-tune your animation parameters*")
+            
+            # Show current preset
+            if st.session_state.selected_animation_preset:
+                st.markdown(f"**Animation:** {st.session_state.selected_animation_preset}")
+            
+            frames = st.slider("Number of Frames", 8, 60, st.session_state.animation_frames, help="More frames = smoother animation")
+            st.session_state.animation_frames = frames
+            
+            duration = st.slider("Total Duration (s)", 0.5, 5.0, st.session_state.animation_duration, 0.1, help="Animation length in seconds")
+            st.session_state.animation_duration = duration
+            
+            resolution_option = st.selectbox(
+                "Quality:",
+                ["Standard (512×512)", "HD (1024×1024)", "4K (3840×2160)"]
+            )
+            
+            resolution_map = {
+                "Standard (512×512)": 512,
+                "HD (1024×1024)": 1024, 
+                "4K (3840×2160)": 3840
+            }
+            resolution = resolution_map[resolution_option]
+            st.session_state.animation_resolution = resolution
+            
+            # Estimated time
+            est_time = frames * (resolution // 256) * 0.5
+            st.info(f"⏱️ Est. time: ~{est_time:.0f}s")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.animation_wizard_step = 2
+                    st.rerun()
+            with col2:
+                if st.button("Ready to Generate ➡️", type="primary", use_container_width=True):
+                    st.session_state.animation_wizard_step = 4
+                    st.rerun()
+        
+        # Step 4: Final Settings & Generate (Perfect Butterfly Symmetry)
+        elif st.session_state.animation_wizard_step == 4:
+            st.markdown("### 🎬 Step 4: Create Your Animation")
+            st.markdown("*Perfect your animation settings and generate*")
+            
+            # Beautiful symmetrical layout
+            preset_col1, preset_col2 = st.columns(2)
+            with preset_col1:
+                if st.session_state.selected_animation_preset:
+                    st.success(f"🎬 **Animation Type**\n{st.session_state.selected_animation_preset}")
+            with preset_col2:
+                if st.session_state.animation_color_palette:
+                    st.info(f"🌈 **Color Palette**\n{st.session_state.animation_color_palette}")
+            
+            st.markdown("#### ⚛️ Perfect Animation Parameters")
+            
+            # Beautiful clean vertical layout - each parameter gets its own line
+            frames = st.slider("Number of Frames", 8, 60, st.session_state.animation_frames, help="More frames = smoother animation")
+            st.session_state.animation_frames = frames
+            
+            duration = st.slider("Total Duration (s)", 0.5, 5.0, st.session_state.animation_duration, 0.1, help="Animation length in seconds")
+            st.session_state.animation_duration = duration
+            
+            st.markdown("#### 📐 Output Resolution")
+            
+            resolution_option = st.selectbox(
+                "Quality:",
+                ["Standard (512×512)", "HD (1024×1024)", "4K (3840×2160)"]
+            )
+            
+            resolution_map = {
+                "Standard (512×512)": 512,
+                "HD (1024×1024)": 1024, 
+                "4K (3840×2160)": 3840
+            }
+            resolution = resolution_map[resolution_option]
+            st.session_state.animation_resolution = resolution
+            
+            # Show estimated generation time
+            est_time = frames * (resolution // 256) * 0.5
+            st.info(f"⏱️ Est. time: ~{est_time:.0f}s")
+            
+            # Perfect symmetrical navigation
+            nav_col1, nav_col2 = st.columns(2)
+            with nav_col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.animation_wizard_step = 3
+                    st.rerun()
+            with nav_col2:
+                # Check if we're in quantum research mode for button text
+                quantum_mode = getattr(st.session_state, 'animation_quantum_mode', False)
+                button_text = "🔬 Generate Quantum Animation" if quantum_mode else "🎬 Generate Animation"
+                
+                if st.button(button_text, type="primary", use_container_width=True):
+                    # Generate immediately
+                    generate_quantum_animation_from_wizard()
+                    st.rerun()
+        
+        # Reset wizard button (always visible)
+        st.markdown("---")
+        if st.button("🔄 Start Over", help="Reset the animation wizard", use_container_width=True, type="secondary"):
+            reset_animation_wizard()
+            st.rerun()
     
     # Main content area
     if st.session_state.animation_gif is not None:
         # Success message with elegant design
+        quantum_mode_text = " (Quantum Research)" if st.session_state.get('quantum_animation_mode', False) else ""
+        
         st.markdown(f"""
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                     color: white; 
@@ -162,7 +376,7 @@ def main():
                     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
                     backdrop-filter: blur(10px);">
             <div style="font-size: 4rem; margin-bottom: 1rem;">🎬</div>
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 300;">Animation Complete</h1>
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 300;">Animation Complete{quantum_mode_text}</h1>
             <p style="font-size: 1.2rem; opacity: 0.9;">
                 {len(st.session_state.animation_frames)} frames • {st.session_state.animation_time:.1f}s generation time
             </p>
@@ -188,13 +402,84 @@ def main():
             
             # Download button with modern design
             timestamp = int(time.time())
-            gif_filename = f"quantyx_animation_{st.session_state.animation_params['style'].lower().replace(' ', '_')}_{timestamp}.gif"
+            animation_type = "quantum" if st.session_state.get('quantum_animation_mode', False) else "artistic"
+            gif_filename = f"quantyx_animation_{animation_type}_{timestamp}.gif"
             download_link_gif = create_download_link_gif(st.session_state.animation_gif, gif_filename)
             st.markdown(f'''
             <div style="text-align: center; margin: 3rem 0;">
                 {download_link_gif}
             </div>
             ''', unsafe_allow_html=True)
+        
+        # Quantum Research Report (if applicable)
+        if (st.session_state.get('quantum_animation_mode', False) and 
+            st.session_state.animation_quantum_data is not None and
+            QUANTUM_RESEARCH_AVAILABLE):
+            
+            st.markdown("---")
+            st.markdown("### 🔬 Quantum Animation Research Report")
+            
+            quantum_data_list = st.session_state.animation_quantum_data
+            
+            # Average quantum metrics across all frames
+            avg_correlation = np.mean([qd.correlation_coefficient for qd in quantum_data_list])
+            avg_entropy = np.mean([qd.metadata['max_entropy'] for qd in quantum_data_list])
+            evolution_range = max([qd.evolution_time for qd in quantum_data_list]) - min([qd.evolution_time for qd in quantum_data_list])
+            
+            research_col1, research_col2, research_col3 = st.columns(3)
+            with research_col1:
+                st.metric("Avg. Curvature-Energy Correlation", f"{avg_correlation:.4f}")
+                st.metric("Avg. Max Entanglement Entropy", f"{avg_entropy:.3f}")
+            with research_col2:
+                st.metric("Hamiltonian Type", quantum_data_list[0].hamiltonian_type.upper())
+                st.metric("Evolution Time Range", f"{evolution_range:.2f}")
+            with research_col3:
+                st.metric("Quantum System Size", f"{quantum_data_list[0].n_qubits} qubits")
+                st.metric("Total Frames", len(quantum_data_list))
+            
+            # Research report expander
+            with st.expander("📋 Complete Animation Physics Report", expanded=False):
+                st.markdown("**Frame-by-Frame Quantum Analysis:**")
+                
+                for i, qd in enumerate(quantum_data_list):
+                    st.markdown(f"""
+                    **Frame {i+1}** (t = {qd.evolution_time:.2f}):
+                    - Correlation: {qd.correlation_coefficient:.4f}
+                    - Max Entropy: {qd.metadata['max_entropy']:.3f}
+                    - Mean Curvature: {qd.metadata['mean_curvature']:.3f}
+                    """)
+                
+                # Download complete research data
+                animation_research_data = {
+                    "animation_metadata": {
+                        "animation_type": "quantum_research",
+                        "frame_count": len(quantum_data_list),
+                        "hamiltonian_type": quantum_data_list[0].hamiltonian_type,
+                        "evolution_time_range": [qd.evolution_time for qd in quantum_data_list],
+                        "avg_correlation": avg_correlation,
+                        "avg_entropy": avg_entropy
+                    },
+                    "frame_data": [
+                        {
+                            "frame": i,
+                            "evolution_time": qd.evolution_time,
+                            "correlation_coefficient": qd.correlation_coefficient,
+                            "entanglement_entropies": qd.entanglement_entropies.tolist(),
+                            "curvatures": qd.curvatures.tolist(),
+                            "energy_deltas": qd.energy_deltas.tolist(),
+                            "metadata": qd.metadata
+                        }
+                        for i, qd in enumerate(quantum_data_list)
+                    ]
+                }
+                
+                research_json = json.dumps(animation_research_data, indent=2, ensure_ascii=False)
+                st.download_button(
+                    label="💾 Download Complete Animation Research Data (JSON)",
+                    data=research_json,
+                    file_name=f"quantyx_animation_research_{timestamp}.json",
+                    mime="application/json"
+                )
         
         # Frame gallery with modern design
         st.markdown("""
@@ -215,7 +500,17 @@ def main():
                 frame_num = row_idx * frames_per_row + col_idx + 1
                 with cols[col_idx]:
                     st.markdown(f'<div style="border-radius: 8px; overflow: hidden; margin: 0.5rem 0;">', unsafe_allow_html=True)
-                    st.image(frame, caption=f"Frame {frame_num}", use_container_width=True)
+                    
+                    # Show quantum data for this frame if available
+                    if (st.session_state.get('quantum_animation_mode', False) and 
+                        st.session_state.animation_quantum_data is not None and
+                        frame_num <= len(st.session_state.animation_quantum_data)):
+                        qd = st.session_state.animation_quantum_data[frame_num - 1]
+                        caption = f"Frame {frame_num}\nt={qd.evolution_time:.2f}\nρ={qd.correlation_coefficient:.3f}"
+                    else:
+                        caption = f"Frame {frame_num}"
+                    
+                    st.image(frame, caption=caption, use_container_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
         
         # Beautiful stats section at the bottom
@@ -232,11 +527,13 @@ def main():
         stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
         
         # Animation metrics with beautiful cards
+        animation_type = "Quantum Research" if st.session_state.get('quantum_animation_mode', False) else "Artistic"
+        
         stats_data = [
             ("🎞️ Frames", len(st.session_state.animation_frames)),
             ("⏱️ Duration", f"{len(st.session_state.animation_frames) * st.session_state.animation_params['frame_duration']:.1f}s"),
-            ("🎛️ Parameter", st.session_state.animation_params['animate_param']),
-            ("🎨 Style", st.session_state.animation_params['style']),
+            ("🔬 Type", animation_type),
+            ("🎨 Style", st.session_state.animation_params.get('style', 'Quantum')),
             ("🌈 Palette", st.session_state.animation_params['palette']),
             ("📐 Resolution", f"{st.session_state.animation_params['resolution']}px"),
             ("⚡ Gen Time", f"{st.session_state.animation_time:.1f}s"),
@@ -281,30 +578,142 @@ def main():
                         """, unsafe_allow_html=True)
     
     else:
-        # Animation studio header
-        st.markdown("""
-        <div style="text-align: center; padding: 2rem 1rem; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 16px; margin-bottom: 2rem;">
-            <h1 style="color: #fff; font-size: 3rem; margin-bottom: 1rem;">🎬 Quantyx Animation Studio</h1>
-            <p style="color: #cce7ff; font-size: 1.3rem; margin-bottom: 0.5rem;">Multi-Frame Animation Mode</p>
-            <p style="color: #99d6ff; font-size: 1rem;">Create looping animations • Perfect for VJing • Music videos • Social sharing</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Wizard-aware welcome screen for animation
+        current_step = st.session_state.animation_wizard_step
         
-
+        if current_step == 1:
+            # Step 1 welcome
+            st.markdown("""
+            <div style="text-align: center; padding: 4rem 2rem; color: #fff;">
+                <h3 style="color: #fff;">🎬 Welcome to the Quantyx Animation Wizard</h3>
+                <p style="font-size: 1.3rem; margin: 1.5rem 0; color: #fff;">Let's create your quantum animation step by step!</p>
+                <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">👈 Start by choosing your animation type in the sidebar</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Feature cards for animation types
+            feat_col1, feat_col2 = st.columns(2)
+            
+            with feat_col1:
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                    <h3 style="color: #fff; margin-bottom: 1rem;">🌊 Phase Evolution</h3>
+                    <p style="color: #e6e6ff;">Watch quantum phases transition with TFIM dynamics</p>
+                    <ul style="color: #ccccff; list-style: none; padding: 0;">
+                        <li>• Real quantum computing</li>
+                        <li>• Phase transitions</li>
+                        <li>• Scientific accuracy</li>
+                        <li>• Research export</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with feat_col2:
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                    <h3 style="color: #fff; margin-bottom: 1rem;">🔗 Entanglement Dynamics</h3>
+                    <p style="color: #e6ffe6;">Visualize quantum entanglement spreading</p>
+                    <ul style="color: #ccffcc; list-style: none; padding: 0;">
+                        <li>• Growing entanglement</li>
+                        <li>• XXZ Hamiltonian</li>
+                        <li>• Beautiful transitions</li>
+                        <li>• Frame-by-frame data</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
         
-        # Feature showcase
-        feat_col1, feat_col2, feat_col3 = st.columns(3)
+        elif current_step == 2:
+            st.markdown("""
+            <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                <h3 style="color: #fff;">🌈 Step 2: Choose Animation Colors</h3>
+                <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Select the color palette that will bring your quantum animation to life</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        elif current_step == 3:
+            st.markdown("""
+            <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                <h3 style="color: #fff;">⚙️ Step 3: Animation Settings</h3>
+                <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Fine-tune your animation frames and timing</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        elif current_step == 4:
+            st.markdown("""
+            <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                <h3 style="color: #fff;">🎬 Step 4: Create Your Animation</h3>
+                <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Perfect your settings and generate your quantum animation</p>
+                <p style="font-size: 1.0rem; margin: 1.5rem 0; color: #aaa;">👈 Click generate in the sidebar when ready</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Beautiful creation summary for final step
+            st.markdown("### ✨ Your Perfect Animation Summary")
+            
+            summary_col1, summary_col2 = st.columns(2)
+            
+            with summary_col1:
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">🎬 Your Animation</h4>
+                    <p style="color: #e6e6ff; font-size: 1.1rem;">""" + str(st.session_state.selected_animation_preset) + """</p>
+                    <p style="color: #ccccff; font-size: 0.9rem;">""" + str(st.session_state.animation_frames) + """ frames</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with summary_col2:
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 1.5rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                    <h4 style="color: #fff; margin-bottom: 1rem;">🌈 Your Style</h4>
+                    <p style="color: #e6ffe6; font-size: 1.1rem;">""" + str(st.session_state.animation_color_palette) + """</p>
+                    <p style="color: #ccffcc; font-size: 0.9rem;">""" + str(st.session_state.animation_duration) + """s duration</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Show animation progress for steps 2-3 (Perfect Butterfly Layout)
+        if current_step > 1 and current_step < 4:
+            st.markdown("### 📋 Your Animation Selections So Far")
+            
+            progress_col1, progress_col2 = st.columns(2)
+            
+            with progress_col1:
+                if st.session_state.selected_animation_preset:
+                    st.success(f"**Animation Type:** {st.session_state.selected_animation_preset}")
+                else:
+                    st.info("**Animation Type:** Not selected")
+            
+            with progress_col2:
+                if current_step >= 3:
+                    st.success(f"**Colors:** {st.session_state.animation_color_palette}")
+                else:
+                    st.info("**Colors:** Not selected")
+        
+        # Footer for first step only
+        if current_step == 1:
+            st.markdown("---")
+            st.markdown("""
+            <div class="footer">
+                <p style="color: #fff;">🎬 Quantyx Animation Wizard • Built with ⚛️ Quantum Physics</p>
+                <p style="color: #fff;"><em>Step-by-step quantum animation creation • Perfect for VJing & social sharing</em></p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Feature showcase (only for step 1)
+        if current_step == 1:
+            st.markdown("---")
+            st.markdown("### 🎬 Animation Studio Features")
+            feat_col1, feat_col2, feat_col3 = st.columns(3)
         
         with feat_col1:
             st.markdown("""
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
-                <h3 style="color: #fff; margin-bottom: 1rem;">🎭 Parameter Animation</h3>
-                <p style="color: #e6e6ff;">Smoothly animate energy, symmetry, distortion, or color over time</p>
+                <h3 style="color: #fff; margin-bottom: 1rem;">🔬 Quantum Animations</h3>
+                <p style="color: #e6e6ff;">Real quantum physics simulations animated over time</p>
                 <ul style="color: #ccccff; list-style: none; padding: 0;">
-                    <li>• Energy Flux: Pulsing effects</li>
-                    <li>• Geometric Order: Morphing shapes</li>
-                    <li>• Field Distortion: Flowing waves</li>
-                    <li>• Spectral Blend: Color shifts</li>
+                    <li>• Phase transitions</li>
+                    <li>• Entanglement evolution</li>
+                    <li>• Quantum quench dynamics</li>
+                    <li>• Holographic flow</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
@@ -312,13 +721,13 @@ def main():
         with feat_col2:
             st.markdown("""
             <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
-                <h3 style="color: #fff; margin-bottom: 1rem;">🔄 Seamless Loops</h3>
-                <p style="color: #e6ffe6;">Perfect loops designed for continuous playback</p>
+                <h3 style="color: #fff; margin-bottom: 1rem;">🎭 Parameter Animation</h3>
+                <p style="color: #e6ffe6;">Smoothly animate energy, symmetry, distortion, or color over time</p>
                 <ul style="color: #ccffcc; list-style: none; padding: 0;">
-                    <li>• Smooth transitions</li>
-                    <li>• No jarring cuts</li>
-                    <li>• Mathematical precision</li>
-                    <li>• Infinite replay value</li>
+                    <li>• Energy Flux: Pulsing effects</li>
+                    <li>• Geometric Order: Morphing shapes</li>
+                    <li>• Field Distortion: Flowing waves</li>
+                    <li>• Spectral Blend: Color shifts</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
@@ -329,73 +738,166 @@ def main():
                 <h3 style="color: #fff; margin-bottom: 1rem;">📱 Export Ready</h3>
                 <p style="color: #ffe6e6;">Optimized for social sharing and professional use</p>
                 <ul style="color: #ffcccc; list-style: none; padding: 0;">
-                    <li>• GIF format support</li>
+                    <li>• Perfect seamless loops</li>
                     <li>• Multiple resolutions</li>
-                    <li>• Optimized file sizes</li>
-                    <li>• Cross-platform compatible</li>
+                    <li>• Research data export</li>
+                    <li>• Cross-platform GIFs</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
         
         # How it works section
         st.markdown("---")
-        st.markdown("### 🛠️ How Animation Works")
+        st.markdown("### 🛠️ How Quantum Animation Works")
         
         steps_col1, steps_col2, steps_col3, steps_col4 = st.columns(4)
         
         with steps_col1:
             st.markdown("""
-            **1️⃣ Choose Base**
-            - Select quantum structure
-            - Set starting parameters
-            - Pick color palette
+            **1️⃣ Choose Mode**
+            - Quantum research presets
+            - Manual parameter control
+            - Select physics model
             """)
         
         with steps_col2:
             st.markdown("""
-            **2️⃣ Select Animation**
-            - Choose parameter to animate
-            - Set animation intensity
-            - Configure timing
+            **2️⃣ Set Animation**
+            - Time evolution range
+            - Frame count & timing
+            - Animation intensity
             """)
         
         with steps_col3:
             st.markdown("""
             **3️⃣ Generate Frames**
-            - Automatically creates sequence
-            - Progress tracking
+            - Real quantum simulations
+            - Physics-accurate evolution
             - Seamless loop calculation
             """)
         
         with steps_col4:
             st.markdown("""
-            **4️⃣ Export & Share**
+            **4️⃣ Export & Research**
             - Download as GIF
-            - Preview frame gallery
-            - Share on social media
+            - Export quantum data
+            - Scientific analysis
             """)
         
         # Footer (only shown on welcome screen)
         st.markdown("---")
         st.markdown("""
         <div style="text-align: center; padding: 2rem; color: #666;">
-                    <p style="color: #fff;">🎬 Quantyx Animation Studio • Built with ⚛️ Quantum Physics</p>
-        <p style="color: #ccc;"><em>Professional quantum animation tools • Part of the Quantyx platform</em></p>
+            <p style="color: #fff;">🎬 Quantyx Animation Studio • Built with ⚛️ Real Quantum Physics</p>
+            <p style="color: #ccc;"><em>Scientific quantum animation tools • Research-grade accuracy</em></p>
             <p style="font-size: 0.9rem; color: #888;">
-                Perfect for VJ performances, music videos, digital art, and social media content
+                Perfect for VJ performances, scientific visualization, music videos, and educational content
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
 
+
+def generate_quantum_animation(generator, palette, frame_count, frame_duration, 
+                              resolution, quantum_preset, time_range):
+    """Generate animation using real quantum physics simulations."""
+    
+    with st.spinner(f"🌌 Running {frame_count} quantum simulations for physics-accurate animation..."):
+        start_time = time.time()
+        
+        # Create progress tracking
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        frames = []
+        quantum_data_list = []
+        
+        # Initialize quantum bridge
+        if QUANTUM_RESEARCH_AVAILABLE:
+            bridge = QuantumArtBridge(n_qubits=6)  # Smaller for faster animation generation
+        else:
+            st.error("Quantum research not available!")
+            return
+        
+        for i in range(frame_count):
+            status_text.text(f"Running quantum simulation for frame {i+1}/{frame_count}...")
+            
+            # Calculate evolution time for this frame
+            evolution_time = (i / (frame_count - 1)) * time_range
+            
+            try:
+                # Run quantum simulation for this time point
+                quantum_data = bridge.run_quantum_simulation(
+                    hamiltonian_type=quantum_preset["hamiltonian_type"],
+                    evolution_time=evolution_time,
+                    hamiltonian_params=quantum_preset.get("hamiltonian_params"),
+                    trotter_steps=10  # Faster for animation
+                )
+                
+                # Map quantum data to art parameters
+                art_params = bridge.quantum_to_art_mapping(
+                    quantum_data, 
+                    style_preference=quantum_preset.get("style_preference", "auto")
+                )
+                
+                # Generate image using quantum-derived parameters
+                frame = generator.generate_quantum_image(
+                    style=art_params["style"],
+                    energy_intensity=art_params["energy_intensity"],
+                    symmetry_level=int(art_params["symmetry_level"]),
+                    deformation_amount=art_params["deformation_amount"],
+                    color_variation=art_params["color_variation"],
+                    resolution=resolution,
+                    color_palette=palette
+                )
+                
+                frames.append(frame)
+                quantum_data_list.append(quantum_data)
+                
+            except Exception as e:
+                st.warning(f"Quantum simulation failed for frame {i+1}, using fallback: {e}")
+                # Fallback to basic generation
+                frame = generator.generate_quantum_image(
+                    "Quantum Bloom", 5.0, 50, 0.3, 0.5, resolution, palette
+                )
+                frames.append(frame)
+            
+            progress_bar.progress((i + 1) / frame_count)
+        
+        # Create GIF
+        status_text.text("Creating animated GIF...")
+        gif_buffer = create_gif_from_frames(frames, frame_duration)
+        
+        generation_time = time.time() - start_time
+        
+        # Store results in session state
+        st.session_state.animation_frames = frames
+        st.session_state.animation_gif = gif_buffer
+        st.session_state.animation_time = generation_time
+        st.session_state.animation_quantum_data = quantum_data_list
+        st.session_state.animation_params = {
+            'style': 'Quantum Research',
+            'palette': palette,
+            'animate_param': 'Quantum Evolution',
+            'frame_count': frame_count,
+            'frame_duration': frame_duration,
+            'resolution': resolution,
+            'quantum_preset': quantum_preset,
+            'time_range': time_range
+        }
+        
+        # Clear progress indicators
+        progress_bar.empty()
+        status_text.empty()
+        
+        st.rerun()
 
 
 def generate_animation(generator, style, palette, base_energy, base_symmetry, 
                       base_deformation, base_color_variation, animate_param, 
                       variation_range, frame_count, frame_duration, resolution):
-    """Generate animation with progress tracking."""
+    """Generate animation with progress tracking (classic mode)."""
     
-    with st.spinner(f"🌌 Generating {frame_count} quantum animation frames..."):
+    with st.spinner(f"🌌 Generating {frame_count} artistic animation frames..."):
         start_time = time.time()
         
         # Create progress tracking
@@ -452,6 +954,7 @@ def generate_animation(generator, style, palette, base_energy, base_symmetry,
         st.session_state.animation_frames = frames
         st.session_state.animation_gif = gif_buffer
         st.session_state.animation_time = generation_time
+        st.session_state.animation_quantum_data = None  # No quantum data for artistic mode
         st.session_state.animation_params = {
             'style': style,
             'palette': palette,

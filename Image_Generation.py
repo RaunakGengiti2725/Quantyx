@@ -29,13 +29,14 @@ except ImportError as e:
     st.warning(f"Quantum research modules not available: {e}")
     QUANTUM_RESEARCH_AVAILABLE = False
 
-# Configure page
-st.set_page_config(
-    page_title="Quantyx - AI Image Generation",
-    page_icon="⚛️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Configure page (only when running as main)
+if __name__ == "__main__":
+    st.set_page_config(
+        page_title="Quantyx - AI Image Generation",
+        page_icon="⚛️",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
 
 # Custom CSS for modern styling with animations
 def load_css():
@@ -217,12 +218,108 @@ def load_css():
         cursor: pointer;
         transition: all 0.3s ease;
         animation: slideIn 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .preset-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.5s ease;
     }
     
     .preset-card:hover {
         background: rgba(255, 255, 255, 0.1);
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .preset-card:hover::before {
+        left: 100%;
+    }
+    
+    .preset-card.applied {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: 2px solid #38ef7d;
+        box-shadow: 0 0 20px rgba(56, 239, 125, 0.4);
+        animation: appliedPulse 2s ease-in-out;
+    }
+    
+    .preset-card.applied::after {
+        content: '✓';
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: #11998e;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .quantum-preset {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        border: 2px solid rgba(102, 126, 234, 0.5);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .quantum-preset::before {
+        background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+    }
+    
+    .quantum-preset .preset-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .preset-applied-banner {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 600;
+        animation: slideInFromTop 0.5s ease-out, glow 2s ease-in-out infinite alternate;
+        margin-bottom: 1rem;
+        box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
+    }
+    
+    @keyframes appliedPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(56, 239, 125, 0.6); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes slideInFromTop {
+        from { 
+            transform: translateY(-100px); 
+            opacity: 0; 
+        }
+        to { 
+            transform: translateY(0); 
+            opacity: 1; 
+        }
+    }
+    
+    @keyframes glow {
+        from { box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4); }
+        to { box-shadow: 0 8px 35px rgba(17, 153, 142, 0.6); }
     }
     
     .resolution-badge {
@@ -631,8 +728,12 @@ def create_download_link(img, filename, resolution):
 
 
 def apply_preset(preset_name):
-    """Apply a visual preset to the session state."""
+    """Apply a visual preset to the session state with enhanced feedback."""
     preset = VISUAL_PRESETS[preset_name]
+    
+    # Clear any previous research mode state
+    if hasattr(st.session_state, 'research_mode_active'):
+        st.session_state.research_mode_active = False
     
     # Check if this is a quantum research preset
     if QUANTUM_RESEARCH_AVAILABLE and any(key in preset for key in ["hamiltonian_type", "evolution_time"]):
@@ -640,9 +741,18 @@ def apply_preset(preset_name):
         st.session_state.quantum_mode = True
         st.session_state.quantum_preset = preset_name
         st.session_state.quantum_preset_data = preset
+        st.session_state.last_quantum_preset = preset_name
         
-        # Don't set parameters yet - they will be determined by quantum simulation
-        st.session_state.preset_applied = f"🔬 {preset_name} (Quantum Research Mode)"
+        # Clear artistic preset when applying quantum
+        if hasattr(st.session_state, 'last_artistic_preset'):
+            del st.session_state.last_artistic_preset
+        
+        # Keep legacy preset_applied for compatibility
+        st.session_state.preset_applied = f"🔬 {preset_name} (Quantum Research)"
+        
+        # Reset generation state to show new preset is ready
+        st.session_state.generation_complete = False
+        st.session_state.generated_image = None
     else:
         # Regular artistic preset
         st.session_state.quantum_mode = False
@@ -651,7 +761,18 @@ def apply_preset(preset_name):
         st.session_state.current_symmetry = preset["symmetry_level"]
         st.session_state.current_deformation = preset["deformation_amount"]
         st.session_state.current_color_variation = preset["color_variation"]
+        st.session_state.last_artistic_preset = preset_name
+        
+        # Clear quantum preset when applying artistic
+        if hasattr(st.session_state, 'last_quantum_preset'):
+            del st.session_state.last_quantum_preset
+        
+        # Keep legacy preset_applied for compatibility
         st.session_state.preset_applied = preset_name
+        
+        # Reset generation state to show new preset is ready
+        st.session_state.generation_complete = False
+        st.session_state.generated_image = None
 
 def randomize_parameters():
     """Randomize all parameters for creative exploration."""
@@ -664,6 +785,143 @@ def randomize_parameters():
     st.session_state.current_deformation = round(random.uniform(0.1, 0.9), 2)
     st.session_state.current_color_variation = round(random.uniform(0.2, 0.8), 2)
     st.session_state.randomized = True
+    
+    # Clear any applied presets when randomizing
+    clear_all_presets()
+
+def clear_all_presets():
+    """Clear all applied presets and reset to manual parameter mode."""
+    # Clear preset state
+    preset_keys_to_clear = [
+        'preset_applied', 'last_quantum_preset', 'last_artistic_preset',
+        'quantum_preset', 'quantum_preset_data', 'quantum_mode', 'research_mode_active'
+    ]
+    
+    for key in preset_keys_to_clear:
+        if hasattr(st.session_state, key):
+            del st.session_state[key]
+    
+    # Explicitly set quantum_mode to False
+    st.session_state.quantum_mode = False
+    
+    # Reset generation state to allow new manual generation
+    st.session_state.generation_complete = False
+    st.session_state.generated_image = None
+
+def reset_wizard():
+    """Reset the wizard to step 1 and clear all selections."""
+    st.session_state.wizard_step = 1
+    st.session_state.selected_preset_type = None
+    st.session_state.selected_specific_preset = None
+    st.session_state.selected_color_palette = "Deep Plasma"
+    
+    # Also clear any applied presets
+    clear_all_presets()
+
+def generate_quantum_art_from_wizard():
+    """Generate quantum art using the wizard selections."""
+    # Get settings from wizard
+    color_palette = st.session_state.selected_color_palette
+    resolution = st.session_state.ready_resolution
+    style = st.session_state.current_style
+    energy_intensity = st.session_state.current_energy
+    symmetry_level = st.session_state.current_symmetry
+    deformation_amount = st.session_state.current_deformation
+    color_variation = st.session_state.current_color_variation
+    
+    # Check if we're in quantum research mode
+    quantum_mode = getattr(st.session_state, 'quantum_mode', False)
+    
+    if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
+        spinner_text = "🌌 Running real quantum simulation with your research model..."
+    else:
+        spinner_text = "🌌 Simulating quantum field dynamics..."
+    
+    with st.spinner(spinner_text):
+        start_time = time.time()
+        
+        if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
+            # Run actual quantum research simulation
+            try:
+                quantum_preset_data = st.session_state.quantum_preset_data
+                
+                # Initialize quantum bridge
+                bridge = QuantumArtBridge(n_qubits=8)
+                
+                # Run quantum simulation
+                quantum_data = bridge.run_quantum_simulation(
+                    hamiltonian_type=quantum_preset_data["hamiltonian_type"],
+                    evolution_time=quantum_preset_data["evolution_time"],
+                    hamiltonian_params=quantum_preset_data.get("hamiltonian_params"),
+                    trotter_steps=20
+                )
+                
+                # Map quantum data to art parameters
+                art_params = bridge.quantum_to_art_mapping(
+                    quantum_data, 
+                    style_preference=quantum_preset_data.get("style_preference", "auto")
+                )
+                
+                # Store quantum data for research report
+                st.session_state.quantum_data = quantum_data
+                st.session_state.quantum_bridge = bridge
+                
+                # Use quantum-derived parameters but keep user's style choice
+                energy_intensity = art_params["energy_intensity"]
+                symmetry_level = int(art_params["symmetry_level"])
+                deformation_amount = art_params["deformation_amount"]
+                color_variation = art_params["color_variation"]
+                
+                # Update session state with quantum-derived values
+                st.session_state.current_energy = energy_intensity
+                st.session_state.current_symmetry = symmetry_level
+                st.session_state.current_deformation = deformation_amount
+                st.session_state.current_color_variation = color_variation
+                
+                # Generate research-based caption
+                correlation = quantum_data.correlation_coefficient
+                hamiltonian = quantum_data.hamiltonian_type.upper()
+                st.session_state.artwork_caption = f"Quantum geometry visualization from {hamiltonian} simulation. " \
+                                                 f"Curvature-energy correlation: {correlation:.4f}. " \
+                                                 f"This image represents real quantum entanglement data " \
+                                                 f"mapped through holographic correspondence."
+                
+                st.session_state.research_mode_active = True
+                
+            except Exception as e:
+                st.error(f"Quantum simulation failed: {e}")
+                # Fallback to regular generation
+                quantum_mode = False
+                st.session_state.quantum_mode = False
+        
+        # Generate the actual image
+        st.session_state.current_palette = color_palette
+        
+        st.session_state.generated_image = st.session_state.generator.generate_quantum_image(
+            style=style,
+            energy_intensity=energy_intensity,
+            symmetry_level=symmetry_level,
+            deformation_amount=deformation_amount,
+            color_variation=color_variation,
+            resolution=resolution,
+            color_palette=color_palette
+        )
+        
+        # Generate caption if not already set by quantum mode
+        if not hasattr(st.session_state, 'research_mode_active') or not st.session_state.research_mode_active:
+            st.session_state.artwork_caption = st.session_state.generator.generate_caption(
+                style, energy_intensity, symmetry_level, deformation_amount, color_variation
+            )
+        
+        generation_time = time.time() - start_time
+        st.session_state.generation_time = generation_time
+        st.session_state.generation_complete = True
+        st.session_state.current_resolution = resolution
+        
+        # Reset wizard after successful generation
+        st.session_state.wizard_step = 1
+        
+        st.success("🎉 **Quantum Art Generated!** Your masterpiece is ready below!")
 
 def generate_animation_frames(generator, style, base_energy, base_symmetry, base_deformation, 
                             base_color_variation, color_palette, resolution, animation_params):
@@ -816,189 +1074,216 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    # Sidebar controls for art generation
+    # Initialize wizard state
+    if 'wizard_step' not in st.session_state:
+        st.session_state.wizard_step = 1
+    if 'selected_preset_type' not in st.session_state:
+        st.session_state.selected_preset_type = None
+    if 'selected_specific_preset' not in st.session_state:
+        st.session_state.selected_specific_preset = None
+    if 'selected_color_palette' not in st.session_state:
+        st.session_state.selected_color_palette = "Deep Plasma"
+
+    # Sidebar wizard flow
     with st.sidebar:
-        st.markdown("### 🎨 Quick Presets")
+        st.markdown("## 🧙‍♂️ Creation Wizard")
         
-        # Visual presets in a more organized layout
-        preset_col1, preset_col2 = st.columns(2)
-        preset_items = list(VISUAL_PRESETS.items())
+        # Progress indicator (Perfect 4-step flow)
+        steps = ["🎯 Preset Type", "🔬 Specific Preset", "🌈 Color Palette", "🎛️ Generate"]
+        current_step = st.session_state.wizard_step
         
-        for i in range(0, len(preset_items), 2):
-            with preset_col1:
-                if i < len(preset_items):
-                    preset_name, preset_data = preset_items[i]
-                    if st.button(preset_name, key=f"preset_{i}", help=preset_data["description"], use_container_width=True):
-                        apply_preset(preset_name)
-                        st.rerun()
+        st.markdown("### 📋 Progress")
+        for i, step in enumerate(steps, 1):
+            if i < current_step:
+                st.markdown(f"✅ **Step {i}**: {step}")
+            elif i == current_step:
+                st.markdown(f"🔄 **Step {i}**: {step}")
+            else:
+                st.markdown(f"⏸️ **Step {i}**: {step}")
+        
+        st.markdown("---")
+        
+        # Step 1: Choose Preset Type
+        if st.session_state.wizard_step == 1:
+            st.markdown("### 🎯 Step 1: Choose Your Path")
+            st.markdown("*Select the type of preset to begin your quantum art journey*")
             
-            with preset_col2:
-                if i + 1 < len(preset_items):
-                    preset_name, preset_data = preset_items[i + 1]
-                    if st.button(preset_name, key=f"preset_{i+1}", help=preset_data["description"], use_container_width=True):
-                        apply_preset(preset_name)
-                        st.rerun()
+            preset_type = st.radio(
+                "What type of creation do you want?",
+                ["🔬 Quantum Research", "🎨 Artistic Preset"],
+                help="Choose between real quantum physics simulations or artistic parameter combinations"
+            )
+            
+            if preset_type == "🔬 Quantum Research" and QUANTUM_RESEARCH_AVAILABLE:
+                st.info("🔬 **Quantum Research Mode**\n\nYou'll create art based on real quantum physics simulations with actual quantum computing algorithms.")
+                st.session_state.selected_preset_type = "quantum"
+            elif preset_type == "🎨 Artistic Preset":
+                st.success("🎨 **Artistic Mode**\n\nYou'll use pre-configured parameter combinations designed by artists for instant beautiful results.")
+                st.session_state.selected_preset_type = "artistic"
+            
+            if st.button("Continue to Preset Selection ➡️", type="primary", use_container_width=True):
+                if st.session_state.selected_preset_type:
+                    st.session_state.wizard_step = 2
+                    st.rerun()
         
-        # Randomize button
-        if st.button("🎲 Surprise Me", help="Randomize all parameters for creative exploration", use_container_width=True, type="secondary"):
-            randomize_parameters()
-            st.rerun()
-        
-        st.markdown("---")
-        st.markdown("### 🌈 Spectral Palette")
-        
-        # Color palette selector
-        color_palette = st.selectbox(
-            "Choose Color Mapping:",
-            list(COLOR_PALETTES.keys()),
-            help="Select the color palette that maps to your quantum field energy"
-        )
-        
-        # Show palette description
-        st.info(f"💡 {COLOR_PALETTES[color_palette]['description']}")
-        
-        st.markdown("---")
-        st.markdown("### 🎛️ Geometry Blueprint")
-        
-        style = st.selectbox(
-            "Quantum Structure:",
-            ["Quantum Bloom", "Singularity Core", "Entanglement Field", "Crystal Spire", "Tunneling Veil"],
-            index=["Quantum Bloom", "Singularity Core", "Entanglement Field", "Crystal Spire", "Tunneling Veil"].index(st.session_state.current_style)
-        )
-        st.session_state.current_style = style
-        
-        st.markdown("### ⚛️ Field Parameters")
-        
-        energy_intensity = st.slider("Energy Flux", 0.0, 10.0, st.session_state.current_energy, 0.1, help="Controls the intensity of quantum field energy")
-        st.session_state.current_energy = energy_intensity
-        
-        symmetry_level = st.slider("Geometric Order", 0, 100, st.session_state.current_symmetry, help="Symmetry level in the quantum structure")
-        st.session_state.current_symmetry = symmetry_level
-        
-        deformation_amount = st.slider("Field Distortion", 0.0, 1.0, st.session_state.current_deformation, 0.01, help="Amount of spacetime curvature deformation")
-        st.session_state.current_deformation = deformation_amount
-        
-        color_variation = st.slider("Spectral Blend", 0.0, 1.0, st.session_state.current_color_variation, 0.01, help="Color variation across the quantum field")
-        st.session_state.current_color_variation = color_variation
-        
-        st.markdown("### 📐 Output Resolution")
-        
-        resolution_option = st.selectbox(
-            "Quality:",
-            ["Standard (512×512)", "HD (1024×1024)", "4K (3840×2160)", "Print (4096×4096)"]
-        )
-        
-        resolution_map = {
-            "Standard (512×512)": 512,
-            "HD (1024×1024)": 1024,
-            "4K (3840×2160)": 3840,
-            "Print (4096×4096)": 4096
-        }
-        resolution = resolution_map[resolution_option]
-        
-        # Show estimated generation time
-        time_estimates = {512: "~1s", 1024: "~3s", 3840: "~15s", 4096: "~20s"}
-        st.info(f"⏱️ Est. time: {time_estimates.get(resolution, '~?s')}")
-        
-        # Animated generate button
-        st.markdown("---")
-        
-        # Check if we're in quantum research mode
-        quantum_mode = getattr(st.session_state, 'quantum_mode', False)
-        
-        if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
-            button_text = "🔬 Run Quantum Research Simulation"
-            spinner_text = "🌌 Running real quantum simulation with your research model..."
-        else:
-            button_text = "⚛️ Run Simulation"
-            spinner_text = "🌌 Simulating quantum field dynamics..."
-        
-        if st.button(button_text, type="primary", use_container_width=True):
-            with st.spinner(spinner_text):
-                start_time = time.time()
+        # Step 2: Choose Specific Preset
+        elif st.session_state.wizard_step == 2:
+            st.markdown("### 🔬 Step 2: Select Your Preset")
+            
+            if st.session_state.selected_preset_type == "quantum":
+                st.markdown("*Choose a quantum physics simulation*")
                 
-                if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
-                    # Run actual quantum research simulation
-                    try:
-                        quantum_preset_data = st.session_state.quantum_preset_data
-                        
-                        # Initialize quantum bridge
-                        bridge = QuantumArtBridge(n_qubits=8)
-                        
-                        # Run quantum simulation
-                        quantum_data = bridge.run_quantum_simulation(
-                            hamiltonian_type=quantum_preset_data["hamiltonian_type"],
-                            evolution_time=quantum_preset_data["evolution_time"],
-                            hamiltonian_params=quantum_preset_data.get("hamiltonian_params"),
-                            trotter_steps=20
-                        )
-                        
-                        # Map quantum data to art parameters
-                        art_params = bridge.quantum_to_art_mapping(
-                            quantum_data, 
-                            style_preference=quantum_preset_data.get("style_preference", "auto")
-                        )
-                        
-                        # Store quantum data for research report
-                        st.session_state.quantum_data = quantum_data
-                        st.session_state.quantum_bridge = bridge
-                        
-                        # Use quantum-derived parameters
-                        style = art_params["style"]
-                        energy_intensity = art_params["energy_intensity"]
-                        symmetry_level = int(art_params["symmetry_level"])
-                        deformation_amount = art_params["deformation_amount"]
-                        color_variation = art_params["color_variation"]
-                        
-                        # Update session state with quantum-derived values
-                        st.session_state.current_style = style
-                        st.session_state.current_energy = energy_intensity
-                        st.session_state.current_symmetry = symmetry_level
-                        st.session_state.current_deformation = deformation_amount
-                        st.session_state.current_color_variation = color_variation
-                        
-                        # Generate research-based caption
-                        correlation = quantum_data.correlation_coefficient
-                        hamiltonian = quantum_data.hamiltonian_type.upper()
-                        st.session_state.artwork_caption = f"Quantum geometry visualization from {hamiltonian} simulation. " \
-                                                         f"Curvature-energy correlation: {correlation:.4f}. " \
-                                                         f"This image represents real quantum entanglement data " \
-                                                         f"mapped through holographic correspondence."
-                        
-                        st.session_state.research_mode_active = True
-                        
-                    except Exception as e:
-                        st.error(f"Quantum simulation failed: {e}")
-                        # Fallback to regular generation
-                        quantum_mode = False
-                        st.session_state.quantum_mode = False
+                # Get quantum research presets
+                quantum_presets = {k: v for k, v in VISUAL_PRESETS.items() 
+                                 if any(key in v for key in ["hamiltonian_type", "evolution_time"])}
                 
-                # Generate the actual image (either from quantum params or manual params)
-                # Store current palette for generation
-                st.session_state.current_palette = color_palette
-                
-                st.session_state.generated_image = st.session_state.generator.generate_quantum_image(
-                    style=style,
-                    energy_intensity=energy_intensity,
-                    symmetry_level=symmetry_level,
-                    deformation_amount=deformation_amount,
-                    color_variation=color_variation,
-                    resolution=resolution,
-                    color_palette=color_palette
+                selected_quantum = st.selectbox(
+                    "Choose quantum physics preset:",
+                    list(quantum_presets.keys()),
+                    help="Select a preset based on real quantum physics simulations"
                 )
                 
-                # Generate caption if not already set by quantum mode
-                if not hasattr(st.session_state, 'research_mode_active') or not st.session_state.research_mode_active:
-                    st.session_state.artwork_caption = st.session_state.generator.generate_caption(
-                        style, energy_intensity, symmetry_level, deformation_amount, color_variation
-                    )
+                if selected_quantum:
+                    preset_data = quantum_presets[selected_quantum]
+                    st.info(f"🔬 **{selected_quantum}**\n\n{preset_data['description']}")
+                    st.session_state.selected_specific_preset = selected_quantum
+            
+            else:  # artistic
+                st.markdown("*Choose an artistic parameter combination*")
                 
-                generation_time = time.time() - start_time
-                st.session_state.generation_time = generation_time
-                st.session_state.generation_complete = True
-                st.session_state.current_resolution = resolution
+                # Regular artistic presets
+                artistic_presets = {k: v for k, v in VISUAL_PRESETS.items() 
+                                  if not any(key in v for key in ["hamiltonian_type", "evolution_time"])}
                 
-                st.rerun()
+                selected_artistic = st.selectbox(
+                    "Choose artistic preset:",
+                    list(artistic_presets.keys()),
+                    help="Select a preset with pre-configured artistic parameters"
+                )
+                
+                if selected_artistic:
+                    preset_data = artistic_presets[selected_artistic]
+                    st.success(f"🎨 **{selected_artistic}**\n\n{preset_data['description']}")
+                    st.session_state.selected_specific_preset = selected_artistic
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.wizard_step = 1
+                    st.rerun()
+            with col2:
+                if st.button("Continue to Colors ➡️", type="primary", use_container_width=True):
+                    if st.session_state.selected_specific_preset:
+                        # Apply the selected preset
+                        apply_preset(st.session_state.selected_specific_preset)
+                        st.session_state.wizard_step = 3
+                        st.rerun()
+        
+        # Step 3: Choose Color Palette
+        elif st.session_state.wizard_step == 3:
+            st.markdown("### 🌈 Step 3: Spectral Palette")
+            st.markdown("*Choose the color mapping for your quantum field*")
+            
+            color_palette = st.selectbox(
+                "Choose Color Mapping:",
+                list(COLOR_PALETTES.keys()),
+                index=list(COLOR_PALETTES.keys()).index(st.session_state.selected_color_palette),
+                help="Select the color palette that maps to your quantum field energy"
+            )
+            
+            # Show palette description
+            st.info(f"💡 {COLOR_PALETTES[color_palette]['description']}")
+            st.session_state.selected_color_palette = color_palette
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.wizard_step = 2
+                    st.rerun()
+            with col2:
+                if st.button("Continue to Parameters ➡️", type="primary", use_container_width=True):
+                    st.session_state.wizard_step = 4
+                    st.rerun()
+        
+        # Step 4: Final Parameters & Generate (Perfect Butterfly Symmetry)
+        elif st.session_state.wizard_step == 4:
+            st.markdown("### 🎛️ Step 4: Create Your Masterpiece")
+            st.markdown("*Perfect your quantum field parameters and generate*")
+            
+            # Beautiful symmetrical layout
+            preset_col1, preset_col2 = st.columns(2)
+            with preset_col1:
+                if st.session_state.selected_specific_preset:
+                    st.success(f"🎨 **Active Preset**\n{st.session_state.selected_specific_preset}")
+            with preset_col2:
+                if st.session_state.selected_color_palette:
+                    st.info(f"🌈 **Color Palette**\n{st.session_state.selected_color_palette}")
+            
+            st.markdown("#### ⚛️ Quantum Structure")
+            
+            style = st.selectbox(
+                "Quantum Structure:",
+                ["Quantum Bloom", "Singularity Core", "Entanglement Field", "Crystal Spire", "Tunneling Veil"],
+                index=["Quantum Bloom", "Singularity Core", "Entanglement Field", "Crystal Spire", "Tunneling Veil"].index(st.session_state.current_style)
+            )
+            st.session_state.current_style = style
+            
+            st.markdown("#### ⚛️ Perfect Field Parameters")
+            
+            # Beautiful clean vertical layout - each parameter gets its own line
+            energy_intensity = st.slider("Energy Flux", 0.0, 10.0, st.session_state.current_energy, 0.1, help="Controls the intensity of quantum field energy")
+            st.session_state.current_energy = energy_intensity
+            
+            symmetry_level = st.slider("Geometric Order", 0, 100, st.session_state.current_symmetry, help="Symmetry level in the quantum structure")
+            st.session_state.current_symmetry = symmetry_level
+            
+            deformation_amount = st.slider("Field Distortion", 0.0, 1.0, st.session_state.current_deformation, 0.01, help="Amount of spacetime curvature deformation")
+            st.session_state.current_deformation = deformation_amount
+            
+            color_variation = st.slider("Spectral Blend", 0.0, 1.0, st.session_state.current_color_variation, 0.01, help="Color variation across the quantum field")
+            st.session_state.current_color_variation = color_variation
+            
+            st.markdown("#### 📐 Output Resolution")
+            
+            resolution_option = st.selectbox(
+                "Quality:",
+                ["Standard (512×512)", "HD (1024×1024)", "4K (3840×2160)", "Print (4096×4096)"]
+            )
+            
+            resolution_map = {
+                "Standard (512×512)": 512,
+                "HD (1024×1024)": 1024,
+                "4K (3840×2160)": 3840,
+                "Print (4096×4096)": 4096
+            }
+            resolution = resolution_map[resolution_option]
+            
+            # Show estimated generation time
+            time_estimates = {512: "~1s", 1024: "~3s", 3840: "~15s", 4096: "~20s"}
+            st.info(f"⏱️ Est. time: {time_estimates.get(resolution, '~?s')}")
+            
+            # Perfect symmetrical navigation
+            nav_col1, nav_col2 = st.columns(2)
+            with nav_col1:
+                if st.button("⬅️ Back", use_container_width=True):
+                    st.session_state.wizard_step = 3
+                    st.rerun()
+            with nav_col2:
+                # Check if we're in quantum research mode for button text
+                quantum_mode = getattr(st.session_state, 'quantum_mode', False)
+                button_text = "🔬 Generate Quantum Art" if quantum_mode else "⚛️ Generate Quantum Art"
+                
+                if st.button(button_text, type="primary", use_container_width=True):
+                    # Store resolution and generate immediately
+                    st.session_state.ready_resolution = resolution
+                    generate_quantum_art_from_wizard()
+                    st.rerun()
+        
+        # Reset wizard button (always visible)
+        st.markdown("---")
+        if st.button("🔄 Start Over", help="Reset the wizard and start from step 1", use_container_width=True, type="secondary"):
+            reset_wizard()
+            st.rerun()
     
     # Main content area for art generation
     col1, col2, col3 = st.columns([1, 3, 1])
@@ -1028,7 +1313,7 @@ def main():
             
             # Download button
             timestamp = int(time.time())
-            filename = f"quantyx_{style.lower().replace(' ', '_')}_{timestamp}.png"
+            filename = f"quantyx_{st.session_state.current_style.lower().replace(' ', '_')}_{timestamp}.png"
             download_link = create_download_link(st.session_state.generated_image, filename, st.session_state.current_resolution)
             st.markdown(f'<div style="text-align: center; margin: 1.5rem 0;">{download_link}</div>', 
                        unsafe_allow_html=True)
@@ -1037,12 +1322,12 @@ def main():
             if st.checkbox("📋 Include Metadata", help="Export generation parameters as JSON"):
                 try:
                     metadata = {
-                        "style": str(style),
+                        "style": str(st.session_state.current_style),
                         "parameters": {
-                            "energy_intensity": float(energy_intensity),
-                            "symmetry_level": int(symmetry_level),
-                            "deformation_amount": float(deformation_amount),
-                            "color_variation": float(color_variation)
+                            "energy_intensity": float(st.session_state.current_energy),
+                            "symmetry_level": int(st.session_state.current_symmetry),
+                            "deformation_amount": float(st.session_state.current_deformation),
+                            "color_variation": float(st.session_state.current_color_variation)
                         },
                         "resolution": f"{st.session_state.current_resolution}×{st.session_state.current_resolution}",
                         "caption": str(st.session_state.artwork_caption),
@@ -1102,11 +1387,11 @@ def main():
                         "energy_deltas": quantum_data.energy_deltas.tolist(),
                         "bulk_weights": quantum_data.bulk_weights.tolist(),
                         "art_parameters": {
-                            "style": style,
-                            "energy_intensity": float(energy_intensity),
-                            "symmetry_level": int(symmetry_level),
-                            "deformation_amount": float(deformation_amount),
-                            "color_variation": float(color_variation)
+                            "style": st.session_state.current_style,
+                            "energy_intensity": float(st.session_state.current_energy),
+                            "symmetry_level": int(st.session_state.current_symmetry),
+                            "deformation_amount": float(st.session_state.current_deformation),
+                            "color_variation": float(st.session_state.current_color_variation)
                         },
                         "metadata": quantum_data.metadata
                     }
@@ -1125,13 +1410,13 @@ def main():
             
             param_col1, param_col2, param_col3, param_col4 = st.columns(4)
             with param_col1:
-                st.metric("Style", style)
-                st.metric("Energy", f"{energy_intensity:.1f}")
+                st.metric("Style", st.session_state.current_style)
+                st.metric("Energy", f"{st.session_state.current_energy:.1f}")
             with param_col2:
-                st.metric("Symmetry", f"{symmetry_level}")
-                st.metric("Deformation", f"{deformation_amount:.2f}")
+                st.metric("Symmetry", f"{st.session_state.current_symmetry}")
+                st.metric("Deformation", f"{st.session_state.current_deformation:.2f}")
             with param_col3:
-                st.metric("Color Var.", f"{color_variation:.2f}")
+                st.metric("Color Var.", f"{st.session_state.current_color_variation:.2f}")
                 st.metric("Resolution", f"{st.session_state.current_resolution}px")
             with param_col4:
                 st.metric("Gen. Time", f"{st.session_state.generation_time:.2f}s")
@@ -1139,58 +1424,135 @@ def main():
                 st.metric("Total Pixels", f"{pixels:,}")
         
         else:
-            # Welcome screen with instructions (only shown before first generation)
-            st.markdown("""
-            <div style="text-align: center; padding: 4rem 2rem; color: #fff;">
-                <h3 style="color: #fff;">🌌 Welcome to Quantyx</h3>
-                <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #fff;">Choose a preset or adjust parameters manually, then generate your quantum masterpiece.</p>
-            </div>
-            """, unsafe_allow_html=True)
+            # Wizard-aware welcome screen
+            current_step = st.session_state.wizard_step
             
-            # Feature cards in columns
-            feat_col1, feat_col2, feat_col3 = st.columns(3)
-            
-            with feat_col1:
+            if current_step == 1:
+                # Step 1 welcome
                 st.markdown("""
-                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; margin: 1rem 0;">
-                    <h4 style="color: #fff; margin-bottom: 1rem;">⚡ Quick Presets</h4>
-                    <p style="color: #fff;">Professional presets designed by artists</p>
+                <div style="text-align: center; padding: 4rem 2rem; color: #fff;">
+                    <h3 style="color: #fff;">🧙‍♂️ Welcome to the Quantyx Creation Wizard</h3>
+                    <p style="font-size: 1.3rem; margin: 1.5rem 0; color: #fff;">Let's create your quantum masterpiece step by step!</p>
+                    <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">👈 Start by choosing your path in the sidebar</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Feature cards for step 1
+                feat_col1, feat_col2 = st.columns(2)
+                
+                with feat_col1:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                        <h3 style="color: #fff; margin-bottom: 1rem;">🔬 Quantum Research</h3>
+                        <p style="color: #e6e6ff;">Create art from real quantum physics simulations</p>
+                        <ul style="color: #ccccff; list-style: none; padding: 0;">
+                            <li>• Real quantum computing</li>
+                            <li>• Scientific accuracy</li>
+                            <li>• Research data export</li>
+                            <li>• Physics-based beauty</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with feat_col2:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 2rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                        <h3 style="color: #fff; margin-bottom: 1rem;">🎨 Artistic Preset</h3>
+                        <p style="color: #e6ffe6;">Use pre-configured artistic parameters</p>
+                        <ul style="color: #ccffcc; list-style: none; padding: 0;">
+                            <li>• Instant results</li>
+                            <li>• Artist-designed</li>
+                            <li>• Quick generation</li>
+                            <li>• Beautiful outcomes</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            elif current_step == 2:
+                st.markdown("""
+                <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                    <h3 style="color: #fff;">🔬 Step 2: Choose Your Specific Preset</h3>
+                    <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Select the exact configuration for your quantum art</p>
                 </div>
                 """, unsafe_allow_html=True)
             
-            with feat_col2:
+            elif current_step == 3:
                 st.markdown("""
-                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; margin: 1rem 0;">
-                    <h4 style="color: #fff; margin-bottom: 1rem;">🎛️ Manual Control</h4>
-                    <p style="color: #fff;">Fine-tune every physics parameter</p>
+                <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                    <h3 style="color: #fff;">🌈 Step 3: Choose Your Colors</h3>
+                    <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Select the spectral palette that will bring your quantum field to life</p>
                 </div>
                 """, unsafe_allow_html=True)
             
-            with feat_col3:
+            elif current_step == 4:
                 st.markdown("""
-                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; margin: 1rem 0;">
-                    <h4 style="color: #fff; margin-bottom: 1rem;">📐 Pro Export</h4>
-                    <p style="color: #fff;">HD, 4K, and print-ready resolutions</p>
+                <div style="text-align: center; padding: 3rem 2rem; color: #fff;">
+                    <h3 style="color: #fff;">🎛️ Step 4: Create Your Masterpiece</h3>
+                    <p style="font-size: 1.1rem; margin: 1.5rem 0; color: #ccc;">Perfect your parameters and generate your quantum art</p>
+                    <p style="font-size: 1.0rem; margin: 1.5rem 0; color: #aaa;">👈 Click generate in the sidebar when ready</p>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Beautiful creation summary for final step
+                st.markdown("### ✨ Your Perfect Creation Summary")
+                
+                summary_col1, summary_col2 = st.columns(2)
+                
+                with summary_col1:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                        <h4 style="color: #fff; margin-bottom: 1rem;">🎯 Your Path</h4>
+                        <p style="color: #e6e6ff; font-size: 1.1rem;">""" + (
+                            "Quantum Research" if st.session_state.selected_preset_type == "quantum" else "Artistic Preset"
+                        ) + """</p>
+                        <p style="color: #ccccff; font-size: 0.9rem;">""" + str(st.session_state.selected_specific_preset) + """</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with summary_col2:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 1.5rem; border-radius: 16px; text-align: center; margin: 1rem 0;">
+                        <h4 style="color: #fff; margin-bottom: 1rem;">🌈 Your Style</h4>
+                        <p style="color: #e6ffe6; font-size: 1.1rem;">""" + str(st.session_state.selected_color_palette) + """</p>
+                        <p style="color: #ccffcc; font-size: 0.9rem;">""" + str(st.session_state.current_style) + """</p>
+                    </div>
+                    """, unsafe_allow_html=True)
             
-            st.markdown("""
-            <div style="text-align: center; padding: 2rem; color: #fff;">
-                <p style="color: #fff;"><em>Each artwork uses real equations from quantum field theory and differential geometry.</em></p>
-            </div>
-            """, unsafe_allow_html=True)
+            # Show wizard progress in main area for steps 2-4 (Perfect Butterfly Layout)
+            if current_step > 1 and current_step < 4:
+                st.markdown("### 📋 Your Selections So Far")
+                
+                progress_col1, progress_col2 = st.columns(2)
+                
+                with progress_col1:
+                    if st.session_state.selected_preset_type:
+                        preset_type_display = "Quantum Research" if st.session_state.selected_preset_type == "quantum" else "Artistic Preset"
+                        st.success(f"**Path:** {preset_type_display}")
+                    else:
+                        st.info("**Path:** Not selected")
+                    
+                    if st.session_state.selected_specific_preset:
+                        st.success(f"**Preset:** {st.session_state.selected_specific_preset}")
+                    else:
+                        st.info("**Preset:** Not selected")
+                
+                with progress_col2:
+                    if current_step >= 3:
+                        st.success(f"**Colors:** {st.session_state.selected_color_palette}")
+                    else:
+                        st.info("**Colors:** Not selected")
+                    
+                    st.info("**Structure:** Configure in next step")
             
-            # Footer (only shown on welcome screen)
-            st.markdown("---")
-            st.markdown("""
-            <div class="footer">
-                <p style="color: #fff;">Built with ⚛️ Quantum Physics & ❤️ by the Quantyx Team</p>
-                <p style="color: #fff;"><em>Quantyx • Professional Quantum Art Platform • Export Ready</em></p>
-                <p style="font-size: 0.9rem; color: #fff;">
-                    Powered by quantum field theory, differential geometry, and advanced visualization algorithms
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+            # Footer for first step only
+            if current_step == 1:
+                st.markdown("---")
+                st.markdown("""
+                <div class="footer">
+                    <p style="color: #fff;">🧙‍♂️ Quantyx Creation Wizard • Built with ⚛️ Quantum Physics</p>
+                    <p style="color: #fff;"><em>Step-by-step quantum art creation • Professional results guaranteed</em></p>
+                </div>
+                """, unsafe_allow_html=True)
     
     # Navigation hint for animation page
     st.markdown("---")
