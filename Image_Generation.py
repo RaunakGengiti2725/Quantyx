@@ -19,6 +19,15 @@ import imageio
 from io import BytesIO
 import tempfile
 import os
+import logging
+
+# Import the quantum research bridge
+try:
+    from quantum_art_bridge import QuantumArtBridge, QuantumArtData, quick_quantum_art
+    QUANTUM_RESEARCH_AVAILABLE = True
+except ImportError as e:
+    st.warning(f"Quantum research modules not available: {e}")
+    QUANTUM_RESEARCH_AVAILABLE = False
 
 # Configure page
 st.set_page_config(
@@ -349,6 +358,49 @@ VISUAL_PRESETS = {
     }
 }
 
+# Quantum Research Presets (based on real physics simulations)
+if QUANTUM_RESEARCH_AVAILABLE:
+    QUANTUM_RESEARCH_PRESETS = {
+        "🔬 Quantum Criticality": {
+            "hamiltonian_type": "tfim",
+            "evolution_time": 0.5,
+            "hamiltonian_params": {"J": 1.0, "h": 1.0},
+            "style_preference": "correlation",
+            "description": "Critical point of quantum phase transition (TFIM)"
+        },
+        "🌌 Deep Entanglement": {
+            "hamiltonian_type": "heisenberg", 
+            "evolution_time": 2.0,
+            "hamiltonian_params": {"J": 1.0, "h": 0.1},
+            "style_preference": "entanglement",
+            "description": "Maximum entanglement entropy regime"
+        },
+        "🕳️ Holographic Duality": {
+            "hamiltonian_type": "xxz",
+            "evolution_time": 1.5,
+            "hamiltonian_params": {"Jx": 1.0, "Jy": 0.5, "Jz": 1.5, "h": 0.8},
+            "style_preference": "curvature",
+            "description": "Strong bulk-boundary correspondence (AdS/CFT)"
+        },
+        "⚡ Quantum Quench": {
+            "hamiltonian_type": "tfim",
+            "evolution_time": 3.0,
+            "hamiltonian_params": {"J": 2.0, "h": 0.1},
+            "style_preference": "dynamics",
+            "description": "Sudden quantum parameter change dynamics"
+        },
+        "📐 Geometric Phase": {
+            "hamiltonian_type": "xxz",
+            "evolution_time": 1.0,
+            "hamiltonian_params": {"Jx": 0.8, "Jy": 0.8, "Jz": 1.2, "h": 1.5},
+            "style_preference": "geometry",
+            "description": "Adiabatic evolution with geometric phases"
+        }
+    }
+    
+    # Merge quantum research presets with visual presets
+    VISUAL_PRESETS.update(QUANTUM_RESEARCH_PRESETS)
+
 
 class QuantumArtGenerator:
     """Advanced quantum geometry art generator with professional features."""
@@ -581,12 +633,25 @@ def create_download_link(img, filename, resolution):
 def apply_preset(preset_name):
     """Apply a visual preset to the session state."""
     preset = VISUAL_PRESETS[preset_name]
-    st.session_state.current_style = preset["style"]
-    st.session_state.current_energy = preset["energy_intensity"]
-    st.session_state.current_symmetry = preset["symmetry_level"]
-    st.session_state.current_deformation = preset["deformation_amount"]
-    st.session_state.current_color_variation = preset["color_variation"]
-    st.session_state.preset_applied = preset_name
+    
+    # Check if this is a quantum research preset
+    if QUANTUM_RESEARCH_AVAILABLE and any(key in preset for key in ["hamiltonian_type", "evolution_time"]):
+        # This is a quantum research preset - run quantum simulation
+        st.session_state.quantum_mode = True
+        st.session_state.quantum_preset = preset_name
+        st.session_state.quantum_preset_data = preset
+        
+        # Don't set parameters yet - they will be determined by quantum simulation
+        st.session_state.preset_applied = f"🔬 {preset_name} (Quantum Research Mode)"
+    else:
+        # Regular artistic preset
+        st.session_state.quantum_mode = False
+        st.session_state.current_style = preset["style"]
+        st.session_state.current_energy = preset["energy_intensity"]
+        st.session_state.current_symmetry = preset["symmetry_level"]
+        st.session_state.current_deformation = preset["deformation_amount"]
+        st.session_state.current_color_variation = preset["color_variation"]
+        st.session_state.preset_applied = preset_name
 
 def randomize_parameters():
     """Randomize all parameters for creative exploration."""
@@ -837,10 +902,78 @@ def main():
         
         # Animated generate button
         st.markdown("---")
-        if st.button("⚛️ Run Simulation", type="primary", use_container_width=True):
-            with st.spinner("🌌 Simulating quantum field dynamics..."):
+        
+        # Check if we're in quantum research mode
+        quantum_mode = getattr(st.session_state, 'quantum_mode', False)
+        
+        if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
+            button_text = "🔬 Run Quantum Research Simulation"
+            spinner_text = "🌌 Running real quantum simulation with your research model..."
+        else:
+            button_text = "⚛️ Run Simulation"
+            spinner_text = "🌌 Simulating quantum field dynamics..."
+        
+        if st.button(button_text, type="primary", use_container_width=True):
+            with st.spinner(spinner_text):
                 start_time = time.time()
                 
+                if quantum_mode and QUANTUM_RESEARCH_AVAILABLE:
+                    # Run actual quantum research simulation
+                    try:
+                        quantum_preset_data = st.session_state.quantum_preset_data
+                        
+                        # Initialize quantum bridge
+                        bridge = QuantumArtBridge(n_qubits=8)
+                        
+                        # Run quantum simulation
+                        quantum_data = bridge.run_quantum_simulation(
+                            hamiltonian_type=quantum_preset_data["hamiltonian_type"],
+                            evolution_time=quantum_preset_data["evolution_time"],
+                            hamiltonian_params=quantum_preset_data.get("hamiltonian_params"),
+                            trotter_steps=20
+                        )
+                        
+                        # Map quantum data to art parameters
+                        art_params = bridge.quantum_to_art_mapping(
+                            quantum_data, 
+                            style_preference=quantum_preset_data.get("style_preference", "auto")
+                        )
+                        
+                        # Store quantum data for research report
+                        st.session_state.quantum_data = quantum_data
+                        st.session_state.quantum_bridge = bridge
+                        
+                        # Use quantum-derived parameters
+                        style = art_params["style"]
+                        energy_intensity = art_params["energy_intensity"]
+                        symmetry_level = int(art_params["symmetry_level"])
+                        deformation_amount = art_params["deformation_amount"]
+                        color_variation = art_params["color_variation"]
+                        
+                        # Update session state with quantum-derived values
+                        st.session_state.current_style = style
+                        st.session_state.current_energy = energy_intensity
+                        st.session_state.current_symmetry = symmetry_level
+                        st.session_state.current_deformation = deformation_amount
+                        st.session_state.current_color_variation = color_variation
+                        
+                        # Generate research-based caption
+                        correlation = quantum_data.correlation_coefficient
+                        hamiltonian = quantum_data.hamiltonian_type.upper()
+                        st.session_state.artwork_caption = f"Quantum geometry visualization from {hamiltonian} simulation. " \
+                                                         f"Curvature-energy correlation: {correlation:.4f}. " \
+                                                         f"This image represents real quantum entanglement data " \
+                                                         f"mapped through holographic correspondence."
+                        
+                        st.session_state.research_mode_active = True
+                        
+                    except Exception as e:
+                        st.error(f"Quantum simulation failed: {e}")
+                        # Fallback to regular generation
+                        quantum_mode = False
+                        st.session_state.quantum_mode = False
+                
+                # Generate the actual image (either from quantum params or manual params)
                 # Store current palette for generation
                 st.session_state.current_palette = color_palette
                 
@@ -854,10 +987,11 @@ def main():
                     color_palette=color_palette
                 )
                 
-                # Generate caption
-                st.session_state.artwork_caption = st.session_state.generator.generate_caption(
-                    style, energy_intensity, symmetry_level, deformation_amount, color_variation
-                )
+                # Generate caption if not already set by quantum mode
+                if not hasattr(st.session_state, 'research_mode_active') or not st.session_state.research_mode_active:
+                    st.session_state.artwork_caption = st.session_state.generator.generate_caption(
+                        style, energy_intensity, symmetry_level, deformation_amount, color_variation
+                    )
                 
                 generation_time = time.time() - start_time
                 st.session_state.generation_time = generation_time
@@ -925,6 +1059,65 @@ def main():
                     )
                 except Exception as e:
                     st.error(f"Error creating metadata: {str(e)}")
+            
+            # Quantum Research Report (if applicable)
+            if (hasattr(st.session_state, 'research_mode_active') and 
+                st.session_state.research_mode_active and 
+                hasattr(st.session_state, 'quantum_data') and
+                QUANTUM_RESEARCH_AVAILABLE):
+                
+                st.markdown("---")
+                st.markdown("### 🔬 Quantum Research Report")
+                
+                quantum_data = st.session_state.quantum_data
+                bridge = st.session_state.quantum_bridge
+                
+                # Key quantum metrics
+                research_col1, research_col2, research_col3 = st.columns(3)
+                with research_col1:
+                    st.metric("Curvature-Energy Correlation", f"{quantum_data.correlation_coefficient:.4f}")
+                    st.metric("Max Entanglement Entropy", f"{quantum_data.metadata['max_entropy']:.3f}")
+                with research_col2:
+                    st.metric("Hamiltonian Type", quantum_data.hamiltonian_type.upper())
+                    st.metric("Evolution Time", f"{quantum_data.evolution_time:.2f}")
+                with research_col3:
+                    st.metric("Quantum System Size", f"{quantum_data.n_qubits} qubits")
+                    st.metric("Simulation Time", f"{quantum_data.metadata.get('computation_time', 0):.2f}s")
+                
+                # Research report expander
+                with st.expander("📋 Detailed Physics Report", expanded=False):
+                    report = bridge.generate_research_report(quantum_data)
+                    st.markdown(f"```\n{report}\n```")
+                    
+                    # Download research data
+                    research_metadata = {
+                        "quantum_simulation": {
+                            "hamiltonian_type": quantum_data.hamiltonian_type,
+                            "evolution_time": quantum_data.evolution_time,
+                            "n_qubits": quantum_data.n_qubits,
+                            "curvature_energy_correlation": quantum_data.correlation_coefficient
+                        },
+                        "entanglement_data": quantum_data.entanglement_entropies.tolist(),
+                        "curvatures": quantum_data.curvatures.tolist(),
+                        "energy_deltas": quantum_data.energy_deltas.tolist(),
+                        "bulk_weights": quantum_data.bulk_weights.tolist(),
+                        "art_parameters": {
+                            "style": style,
+                            "energy_intensity": float(energy_intensity),
+                            "symmetry_level": int(symmetry_level),
+                            "deformation_amount": float(deformation_amount),
+                            "color_variation": float(color_variation)
+                        },
+                        "metadata": quantum_data.metadata
+                    }
+                    
+                    research_json = json.dumps(research_metadata, indent=2, ensure_ascii=False)
+                    st.download_button(
+                        label="💾 Download Quantum Research Data (JSON)",
+                        data=research_json,
+                        file_name=f"quantyx_research_{quantum_data.hamiltonian_type}_{int(time.time())}.json",
+                        mime="application/json"
+                    )
             
             # Technical parameters display
             st.markdown("---")
