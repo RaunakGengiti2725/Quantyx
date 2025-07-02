@@ -7,9 +7,17 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-Quantyx is a professional AI image generation platform that uses real quantum field theory and differential geometry equations to create stunning, physics-inspired artwork. Built with Streamlit, it offers an intuitive interface for both beginners and professionals.
+Quantyx is a revolutionary **Research-to-Art Platform** that transforms real quantum many-body simulations into stunning visualizations. Unlike other generators that use "physics-inspired" algorithms, Quantyx renders **actual quantum entanglement data** from your research, creating artwork that represents genuine scientific discoveries.
 
 ## 🌟 Features
+
+### 🔬 **Real Quantum Research Integration** ⭐ **NEW!**
+- **Live Quantum Simulations** - PennyLane-powered TFIM, XXZ, Heisenberg Hamiltonians
+- **Entanglement Analysis** - Von Neumann entropy across all contiguous intervals
+- **Holographic Correspondence** - AdS/CFT-inspired bulk-boundary mapping
+- **Graph Neural Networks** - Learn bulk geometry from boundary entanglement
+- **Curvature-Energy Correlations** - Real physics results in every visualization
+- **Research Data Export** - Download complete quantum simulation data
 
 ### 🎨 **5 Unique Artistic Styles**
 - **Quantum Bloom** - Blooming quantum interference patterns
@@ -40,6 +48,13 @@ Quantyx is a professional AI image generation platform that uses real quantum fi
 - Parameter morphing over time
 - Perfect for VJing and social media
 - Professional export quality
+
+### 🧬 **Quantum Research Presets**
+- **🔬 Quantum Criticality** - Critical point phase transitions (TFIM)
+- **🌌 Deep Entanglement** - Maximum entropy regimes (Heisenberg)
+- **🕳️ Holographic Duality** - Strong bulk-boundary correspondence (XXZ)
+- **⚡ Quantum Quench** - Sudden parameter change dynamics
+- **📐 Geometric Phase** - Adiabatic evolution with Berry phases
 
 ## 🚀 Quick Start
 
@@ -99,12 +114,14 @@ Quantyx is a professional AI image generation platform that uses real quantum fi
 
 ## 🔬 Technical Details
 
-### **Physics Foundation**
-Quantyx implements real equations from:
-- **Quantum Field Theory** - Wave function mathematics
-- **Differential Geometry** - Spacetime curvature calculations
-- **Complex Analysis** - Holomorphic function visualization
-- **Statistical Mechanics** - Thermal distribution patterns
+### **Quantum Research Foundation**
+Quantyx uses your actual research modules:
+- **PennyLane Simulations** - Real quantum circuits and Hamiltonians  
+- **Graph Neural Networks** - Bulk geometry reconstruction from entanglement
+- **Holographic Duality** - AdS/CFT correspondence principles
+- **Many-Body Physics** - TFIM, XXZ, Heisenberg model simulations
+- **Entanglement Analysis** - Von Neumann entropy distributions
+- **Curvature-Energy Mapping** - Boundary-bulk holographic correspondence
 
 ### **Rendering Pipeline**
 - NumPy arrays for field calculations
@@ -120,14 +137,21 @@ Quantyx implements real equations from:
 
 ## 🎯 Use Cases
 
-- **Digital Art** - Professional artwork creation
-- **VJ Performances** - Live visual content
-- **Music Videos** - Abstract visual backgrounds
-- **Social Media** - Eye-catching content
-- **Print Media** - High-resolution artwork
-- **Scientific Visualization** - Physics concept illustration
-- **Game Development** - Procedural textures
-- **Web Design** - Unique background elements
+### **Research & Science**
+- **Physics Research** - Visualize your quantum simulation results
+- **Scientific Papers** - Publication-ready quantum art figures  
+- **Conference Presentations** - Stunning physics visualization
+- **Grant Proposals** - Visual representation of quantum concepts
+- **Educational Content** - Teaching quantum mechanics through art
+
+### **Creative & Commercial**
+- **Digital Art** - Physics-accurate generative art
+- **VJ Performances** - Live quantum-driven visuals
+- **Music Videos** - Science-inspired backgrounds
+- **Social Media** - Unique quantum content
+- **Print Media** - High-resolution scientific art
+- **Game Development** - Quantum-themed procedural textures
+- **Web Design** - Physics-based design elements
 
 ## 📁 Project Structure
 
